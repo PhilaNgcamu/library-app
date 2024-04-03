@@ -1,12 +1,14 @@
-import { GluestackUIProvider, Text, Box } from "@gluestack-ui/themed";
-import { config } from "@gluestack-ui/config";
+import React from "react";
+import { Provider } from "react-redux";
+import BookManagementScreen from "./src/components/BookManagementScreen";
+import store from "./redux/store";
 
-export default function App() {
+const App = () => {
   return (
-    <GluestackUIProvider config={config}>
-      <Box style={{ flex: 1 }} justifyContent="center" alignItems="center">
-        <Text>Open up App.js to start working on your app!</Text>
-      </Box>
-    </GluestackUIProvider>
+    <Provider store={store}>
+      <BookManagementScreen />
+    </Provider>
   );
-}
+};
+
+export default App;

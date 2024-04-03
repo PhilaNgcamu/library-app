@@ -98,4 +98,4 @@ const deleteBook = (id) => {
   });
 };
 
-export { db, initialiseDatabase };
+export { db, initialiseDatabase, addBook, getAllBooks, updateBook, deleteBook };

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { TouchableOpacity, StyleSheet } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import {
   addBook,
@@ -8,7 +8,7 @@ import {
   setGenre,
   setTitle,
 } from "../../redux/actions";
-import { Input, Button, List, ListItem } from "@gluestack-ui/themed";
+import { View, Text, Input, Button, FlatList } from "@gluestack-ui/themed";
 
 const BookManagementScreen = () => {
   const dispatch = useDispatch();
@@ -34,15 +34,14 @@ const BookManagementScreen = () => {
     }
     console.log("Philasander", item);
     return (
-      <ListItem
-        title={item.title || ""}
-        subtitle={item.author + " - " + item.genre}
-        rightContent={
-          <TouchableOpacity onPress={() => handleDeleteBook(item.id)}>
-            <Text style={styles.deleteButton}>Delete</Text>
-          </TouchableOpacity>
-        }
-      />
+      <TouchableOpacity onPress={() => handleDeleteBook(item.id)}>
+        <View style={styles.listItem}>
+          <Text style={styles.title}>{item.title || ""}</Text>
+          <Text style={styles.subtitle}>
+            {item.author + " - " + item.genre}
+          </Text>
+        </View>
+      </TouchableOpacity>
     );
   };
 
@@ -67,8 +66,8 @@ const BookManagementScreen = () => {
         onChangeText={(text) => dispatch(setGenre(text))}
       />
       <Button title="Add Book" onPress={handleAddBook} />
-      <List
-        data={books || []} // Provide an empty array if books is undefined
+      <FlatList
+        data={books || []}
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
       />
@@ -79,10 +78,19 @@ const BookManagementScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    paddingTop: 80,
   },
-  deleteButton: {
-    color: "red",
+  listItem: {
+    padding: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: "#ccc",
+  },
+  title: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  subtitle: {
+    fontSize: 16,
   },
 });
 

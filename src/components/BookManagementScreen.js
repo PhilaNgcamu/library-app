@@ -32,7 +32,7 @@ const BookManagementScreen = () => {
     if (!item) {
       return null;
     }
-    console.log("Philasander", item);
+    console.log("Philasande", item);
     return (
       <TouchableOpacity onPress={() => handleDeleteBook(item.id)}>
         <View style={styles.listItem}>

@@ -101,6 +101,7 @@ const BookManagementScreen = () => {
         action="primary"
         isDisabled={false}
         isFocusVisible={false}
+        onPress={handleAddBook}
       >
         <ButtonText>Add Book</ButtonText>
       </Button>

@@ -19,7 +19,7 @@ import {
   ButtonIcon,
 } from "@gluestack-ui/themed";
 
-const BookManagementScreen = () => {
+const BookManagement = () => {
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books);
   const title = useSelector((state) => state.books.title);
@@ -131,4 +131,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BookManagementScreen;
+export default BookManagement;

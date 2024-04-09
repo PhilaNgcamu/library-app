@@ -1,8 +1,12 @@
 import actionTypes from "./actionTypes";
 
-export const addBook = (title, author, genre) => ({
+const generateId = () => {
+  return "_" + Math.random().toString(36).substr(2, 9);
+};
+
+export const addBook = (id, title, author, genre) => ({
   type: actionTypes.ADD_BOOK,
-  payload: { title, author, genre },
+  payload: { id, title, author, genre },
 });
 
 export const updateBook = (id, title, author, genre) => ({

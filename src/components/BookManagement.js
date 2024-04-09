@@ -16,18 +16,19 @@ import {
   Input,
   InputField,
   ButtonText,
-  ButtonIcon,
 } from "@gluestack-ui/themed";
 
 const BookManagement = () => {
   const dispatch = useDispatch();
-  const books = useSelector((state) => state.books);
+  const books = useSelector((state) => state.books.books);
+  console.log("books", books);
   const title = useSelector((state) => state.books.title);
   const author = useSelector((state) => state.books.author);
   const genre = useSelector((state) => state.books.genre);
 
   const handleAddBook = () => {
-    dispatch(addBook(title, author, genre));
+    const id = "_" + Math.random().toString(36).substr(2, 9);
+    dispatch(addBook(id, title, author, genre));
     dispatch(setTitle(""));
     dispatch(setAuthor(""));
     dispatch(setGenre(""));
@@ -40,7 +41,7 @@ const BookManagement = () => {
     if (!item) {
       return null;
     }
-    console.log("item", item);
+    console.log("item", item.id);
     return (
       <TouchableOpacity onPress={() => handleDeleteBook(item.id)}>
         <View style={styles.listItem}>
@@ -107,7 +108,11 @@ const BookManagement = () => {
         <ButtonText>Add Book</ButtonText>
       </Button>
 
-      <FlatList data={books} renderItem={renderItem} />
+      <FlatList
+        data={books}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.id.toString()}
+      />
     </View>
   );
 };

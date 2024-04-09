@@ -16,7 +16,7 @@ const initialiseDatabase = () => {
   });
 };
 
-const addBook = (title, author, genre, available) => {
+const addBookIntoDatabase = (title, author, genre, available) => {
   return new Promise((resolve, reject) => {
     db.transaction(
       (tx) => {
@@ -99,4 +99,11 @@ const deleteBook = (id) => {
   });
 };
 
-export { db, initialiseDatabase, addBook, getAllBooks, updateBook, deleteBook };
+export {
+  db,
+  initialiseDatabase,
+  addBookIntoDatabase,
+  getAllBooks,
+  updateBook,
+  deleteBook,
+};

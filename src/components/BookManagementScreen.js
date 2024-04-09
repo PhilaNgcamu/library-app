@@ -8,7 +8,16 @@ import {
   setGenre,
   setTitle,
 } from "../../redux/actions";
-import { View, Text, Input, Button, FlatList } from "@gluestack-ui/themed";
+import {
+  View,
+  Text,
+  Button,
+  FlatList,
+  Input,
+  InputField,
+  ButtonText,
+  ButtonIcon,
+} from "@gluestack-ui/themed";
 
 const BookManagementScreen = () => {
   const dispatch = useDispatch();
@@ -48,24 +57,54 @@ const BookManagementScreen = () => {
   return (
     <View style={styles.container}>
       <Input
-        label="Title"
-        placeholder="Enter title"
-        value={title}
-        onChangeText={(text) => dispatch(setTitle(text))}
-      />
+        variant="outline"
+        size="md"
+        isDisabled={false}
+        isInvalid={false}
+        isReadOnly={false}
+      >
+        <InputField
+          placeholder="Enter title"
+          value={title}
+          onChangeText={(text) => dispatch(setTitle(text))}
+        />
+      </Input>
       <Input
-        label="Author"
-        placeholder="Enter author"
-        value={author}
-        onChangeText={(text) => dispatch(setAuthor(text))}
-      />
+        variant="outline"
+        size="md"
+        isDisabled={false}
+        isInvalid={false}
+        isReadOnly={false}
+      >
+        <InputField
+          placeholder="Enter author"
+          value={author}
+          onChangeText={(text) => dispatch(setAuthor(text))}
+        />
+      </Input>
       <Input
-        label="Genre"
-        placeholder="Enter genre"
-        value={genre}
-        onChangeText={(text) => dispatch(setGenre(text))}
-      />
-      <Button title="Add Book" onPress={handleAddBook} />
+        variant="outline"
+        size="md"
+        isDisabled={false}
+        isInvalid={false}
+        isReadOnly={false}
+      >
+        <InputField
+          placeholder="Enter genre"
+          value={genre}
+          onChangeText={(text) => dispatch(setGenre(text))}
+        />
+      </Input>
+      <Button
+        size="md"
+        variant="solid"
+        action="primary"
+        isDisabled={false}
+        isFocusVisible={false}
+      >
+        <ButtonText>Add Book</ButtonText>
+      </Button>
+
       <FlatList
         data={books || []}
         renderItem={renderItem}
@@ -83,7 +122,7 @@ const styles = StyleSheet.create({
   listItem: {
     padding: 10,
     borderBottomWidth: 1,
-    borderBottomColor: "#ccc",
+    borderBottomColor: "#000",
   },
   title: {
     fontSize: 18,

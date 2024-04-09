@@ -22,9 +22,9 @@ import {
 const BookManagementScreen = () => {
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books);
-  const title = useSelector((state) => state.title);
-  const author = useSelector((state) => state.author);
-  const genre = useSelector((state) => state.genre);
+  const title = useSelector((state) => state.books.title);
+  const author = useSelector((state) => state.books.author);
+  const genre = useSelector((state) => state.books.genre);
 
   const handleAddBook = () => {
     dispatch(addBook(title, author, genre));
@@ -36,12 +36,11 @@ const BookManagementScreen = () => {
   const handleDeleteBook = (id) => {
     dispatch(deleteBook(id));
   };
-
   const renderItem = ({ item }) => {
     if (!item) {
       return null;
     }
-    console.log("Philasande", item);
+    console.log("item", item);
     return (
       <TouchableOpacity onPress={() => handleDeleteBook(item.id)}>
         <View style={styles.listItem}>
@@ -53,6 +52,8 @@ const BookManagementScreen = () => {
       </TouchableOpacity>
     );
   };
+
+  console.log(books);
 
   return (
     <View style={styles.container}>
@@ -106,11 +107,7 @@ const BookManagementScreen = () => {
         <ButtonText>Add Book</ButtonText>
       </Button>
 
-      <FlatList
-        data={books || []}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      <FlatList data={books} renderItem={renderItem} />
     </View>
   );
 };

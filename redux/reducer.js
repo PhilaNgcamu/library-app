@@ -26,6 +26,8 @@ const booksReducer = (state = initialState, action) => {
         genre: action.payload.genre,
       };
     case actionTypes.ADD_BOOK:
+      console.log("Philasande", action.payload);
+      console.log("Philasande Books", state.books);
       return {
         ...state,
         books: [...state.books, action.payload],

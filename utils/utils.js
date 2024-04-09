@@ -26,6 +26,7 @@ const addBook = (title, author, genre, available) => {
           (_, { rowsAffected }) => {
             if (rowsAffected > 0) {
               resolve("Book added successfully");
+              console.log("Book added successfully");
             } else {
               reject(new Error("Failed to add book"));
             }

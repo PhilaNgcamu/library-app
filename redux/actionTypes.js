@@ -9,4 +9,4 @@ const actionTypes = {
   SET_GENRE: "SET_GENRE",
 };
 
-module.exports = actionTypes;
+export default actionTypes;

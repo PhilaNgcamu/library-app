@@ -1,9 +1,5 @@
 import actionTypes from "./actionTypes";
 
-const generateId = () => {
-  return "_" + Math.random().toString(36).substr(2, 9);
-};
-
 export const addBook = (id, title, author, genre) => ({
   type: actionTypes.ADD_BOOK,
   payload: { id, title, author, genre },
@@ -27,10 +23,13 @@ export const getAllBorrowings = () => ({
   type: actionTypes.GET_ALL_BORROWINGS,
 });
 
-export const setTitle = (title) => ({
-  type: actionTypes.SET_TITLE,
-  payload: { title },
-});
+export const setTitle = (title) => {
+  console.log(title);
+  return {
+    type: actionTypes.SET_TITLE,
+    payload: { title },
+  };
+};
 
 export const setAuthor = (author) => ({
   type: actionTypes.SET_AUTHOR,

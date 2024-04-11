@@ -21,13 +21,15 @@ import {
 const BookManagement = () => {
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.books);
-  console.log("books", books);
   const title = useSelector((state) => state.books.title);
   const author = useSelector((state) => state.books.author);
   const genre = useSelector((state) => state.books.genre);
+  // const state = useSelector((state) => state.books);
+  // console.log(state);
 
   const handleAddBook = () => {
-    const id = "_" + Math.random().toString(36).substr(2, 9);
+    const id = "_" + Math.random().toString(36).substring(2, 9);
+    // console.log(id, title, author, genre);
     dispatch(addBook(id, title, author, genre));
     dispatch(setTitle(""));
     dispatch(setAuthor(""));
@@ -37,76 +39,51 @@ const BookManagement = () => {
   const handleDeleteBook = (id) => {
     dispatch(deleteBook(id));
   };
+
   const renderItem = ({ item }) => {
     if (!item) {
       return null;
     }
-    console.log("item", item.id);
+
     return (
       <TouchableOpacity onPress={() => handleDeleteBook(item.id)}>
         <View style={styles.listItem}>
           <Text style={styles.title}>{item.title || ""}</Text>
-          <Text style={styles.subtitle}>
-            {item.author + " - " + item.genre}
-          </Text>
+          <Text style={styles.author}>{item.author || ""}</Text>
+          <Text style={styles.genre}>{item.genre || ""}</Text>
         </View>
       </TouchableOpacity>
     );
   };
 
-  console.log(books);
-
   return (
     <View style={styles.container}>
-      <Input
-        variant="outline"
-        size="md"
-        isDisabled={false}
-        isInvalid={false}
-        isReadOnly={false}
-      >
-        <InputField
-          placeholder="Enter title"
-          value={title}
-          onChangeText={(text) => dispatch(setTitle(text))}
-        />
-      </Input>
-      <Input
-        variant="outline"
-        size="md"
-        isDisabled={false}
-        isInvalid={false}
-        isReadOnly={false}
-      >
-        <InputField
-          placeholder="Enter author"
-          value={author}
-          onChangeText={(text) => dispatch(setAuthor(text))}
-        />
-      </Input>
-      <Input
-        variant="outline"
-        size="md"
-        isDisabled={false}
-        isInvalid={false}
-        isReadOnly={false}
-      >
-        <InputField
-          placeholder="Enter genre"
-          value={genre}
-          onChangeText={(text) => dispatch(setGenre(text))}
-        />
-      </Input>
-      <Button
-        size="md"
-        variant="solid"
-        action="primary"
-        isDisabled={false}
-        isFocusVisible={false}
-        onPress={handleAddBook}
-      >
-        <ButtonText>Add Book</ButtonText>
-      </Button>
+      <View style={styles.formContainer}>
+        <Input style={styles.input}>
+          <InputField
+            value={title}
+            onChangeText={(text) => dispatch(setTitle(text))}
+            placeholder="Title"
+          />
+        </Input>
+        <Input style={styles.input}>
+          <InputField
+            value={author}
+            onChangeText={(text) => dispatch(setAuthor(text))}
+            placeholder="Author"
+          />
+        </Input>
+        <Input style={styles.input}>
+          <InputField
+            value={genre}
+            onChangeText={(text) => dispatch(setGenre(text))}
+            placeholder="Genre"
+          />
+        </Input>
+        <Button onPress={handleAddBook} style={styles.addButton}>
+          <ButtonText>Add Book</ButtonText>
+        </Button>
+      </View>
 
       <FlatList
         data={books}
@@ -120,19 +97,34 @@ const BookManagement = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingTop: 80,
+    padding: 20,
+    paddingTop: 50,
+  },
+  formContainer: {
+    marginBottom: 20,
+  },
+  input: {
+    marginBottom: 10,
+  },
+  addButton: {
+    alignSelf: "flex-end",
   },
   listItem: {
     padding: 10,
-    borderBottomWidth: 1,
-    borderBottomColor: "#000",
+    marginBottom: 10,
+    backgroundColor: "#f0f0f0",
+    borderRadius: 5,
   },
   title: {
     fontSize: 18,
     fontWeight: "bold",
   },
-  subtitle: {
+  author: {
     fontSize: 16,
+  },
+  genre: {
+    fontSize: 14,
+    fontStyle: "italic",
   },
 });
 

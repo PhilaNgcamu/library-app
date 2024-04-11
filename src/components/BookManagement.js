@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useState } from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Entypo } from "@expo/vector-icons";
+import { Snackbar } from "react-native-paper";
 import {
   addBook,
   deleteBook,
@@ -26,6 +27,9 @@ const BookManagement = () => {
   const author = useSelector((state) => state.books.author);
   const genre = useSelector((state) => state.books.genre);
 
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+
   const handleAddBook = () => {
     if (!title.trim() || !author.trim() || !genre.trim()) {
       alert("Please enter all book details");
@@ -36,6 +40,9 @@ const BookManagement = () => {
     dispatch(setTitle(""));
     dispatch(setAuthor(""));
     dispatch(setGenre(""));
+
+    setSnackbarMessage("Book added successfully!");
+    setSnackbarVisible(true);
   };
 
   const handleDeleteBook = (id) => {
@@ -93,6 +100,17 @@ const BookManagement = () => {
         renderItem={renderItem}
         keyExtractor={(item) => item.id.toString()}
       />
+
+      <Snackbar
+        visible={snackbarVisible}
+        style={{
+          backgroundColor: "#32a244",
+        }}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={3000}
+      >
+        {snackbarMessage}
+      </Snackbar>
     </View>
   );
 };
@@ -101,6 +119,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 20,
+    backgroundColor: "#f0f0f0",
   },
 
   formContainer: {
@@ -117,7 +136,7 @@ const styles = StyleSheet.create({
   listItem: {
     padding: 10,
     marginBottom: 10,
-    backgroundColor: "#f0f0f0",
+    backgroundColor: "#ddd",
     borderRadius: 5,
   },
   title: {

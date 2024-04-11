@@ -1,7 +1,8 @@
 import React, { useState } from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { Entypo } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { Entypo, MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
 import {
   addBook,
@@ -30,6 +31,8 @@ const BookManagement = () => {
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
+  const navigation = useNavigation();
+
   const handleAddBook = () => {
     if (!title.trim() || !author.trim() || !genre.trim()) {
       alert("Please enter all book details");
@@ -54,12 +57,27 @@ const BookManagement = () => {
       return null;
     }
 
+    const handleViewDetails = () => {
+      navigation.navigate("BookDetailsScreen", { bookId: item.id });
+    };
+
     return (
-      <TouchableOpacity onPress={() => handleDeleteBook(item.id)}>
+      <TouchableOpacity onPress={handleViewDetails}>
         <View style={styles.listItem}>
           <Text style={styles.title}>{item.title || ""}</Text>
           <Text style={styles.author}>{item.author || ""}</Text>
           <Text style={styles.genre}>{item.genre || ""}</Text>
+          <MaterialIcons
+            name="keyboard-arrow-right"
+            size={24}
+            color="black"
+            style={{
+              marginLeft: "auto",
+              position: "absolute",
+              top: "50%",
+              right: 10,
+            }}
+          />
         </View>
       </TouchableOpacity>
     );

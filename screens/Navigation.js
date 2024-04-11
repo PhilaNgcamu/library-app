@@ -2,6 +2,7 @@ import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import React from "react";
 import BookManagement from "../src/components/BookManagement";
+import BookDetailsScreen from "./BookDetailsScreen";
 
 const Stack = createStackNavigator();
 
@@ -23,6 +24,7 @@ const StackNavigator = () => {
           animation: "slide_from_right",
         }}
       />
+      <Stack.Screen name="BookDetailsScreen" component={BookDetailsScreen} />
     </Stack.Navigator>
   );
 };

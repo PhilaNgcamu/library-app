@@ -11,7 +11,6 @@ const initialState = {
 const booksReducer = (state = initialState, action) => {
   switch (action.type) {
     case actionTypes.SET_TITLE:
-      console.log(action);
       return {
         ...state,
         title: action.payload.title,

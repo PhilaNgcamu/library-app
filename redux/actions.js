@@ -23,13 +23,10 @@ export const getAllBorrowings = () => ({
   type: actionTypes.GET_ALL_BORROWINGS,
 });
 
-export const setTitle = (title) => {
-  console.log(title);
-  return {
-    type: actionTypes.SET_TITLE,
-    payload: { title },
-  };
-};
+export const setTitle = (title) => ({
+  type: actionTypes.SET_TITLE,
+  payload: { title },
+});
 
 export const setAuthor = (author) => ({
   type: actionTypes.SET_AUTHOR,

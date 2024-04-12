@@ -10,7 +10,7 @@ import {
   setAuthor,
   setGenre,
   setTitle,
-} from "../../redux/actions";
+} from "../redux/actions";
 import {
   View,
   Text,
@@ -21,7 +21,7 @@ import {
   ButtonText,
 } from "@gluestack-ui/themed";
 
-const BookManagement = () => {
+const BookManagementScreen = () => {
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.books);
   const title = useSelector((state) => state.books.title);
@@ -171,4 +171,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default BookManagement;
+export default BookManagementScreen;

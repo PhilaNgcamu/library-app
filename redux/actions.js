@@ -5,9 +5,14 @@ export const addBook = (id, title, author, genre) => ({
   payload: { id, title, author, genre },
 });
 
-export const updateBook = (id, title, author, genre) => ({
-  type: actionTypes.UPDATE_BOOK,
-  payload: { id, title, author, genre },
+export const setEditingBookId = (id) => ({
+  type: actionTypes.SET_EDITING_BOOK_ID,
+  payload: { id },
+});
+
+export const updateBookDetails = (bookId, title, author, genre) => ({
+  type: actionTypes.UPDATE_BOOK_DETAILS,
+  payload: { bookId, title, author, genre },
 });
 
 export const deleteBook = (id) => ({

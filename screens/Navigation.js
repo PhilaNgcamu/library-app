@@ -1,8 +1,9 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import React from "react";
-import BookManagement from "../src/components/BookManagement";
 import BookDetailsScreen from "./BookDetailsScreen";
+import BookManagementScreen from "./BookManagementScreen";
+import EditBookScreen from "./EditBookScreen";
 
 const Stack = createStackNavigator();
 
@@ -11,7 +12,7 @@ const StackNavigator = () => {
     <Stack.Navigator>
       <Stack.Screen
         name="MBC Library"
-        component={BookManagement}
+        component={BookManagementScreen}
         options={{
           headerStyle: {
             backgroundColor: "#32a244",
@@ -25,6 +26,7 @@ const StackNavigator = () => {
         }}
       />
       <Stack.Screen name="Book Details" component={BookDetailsScreen} />
+      <Stack.Screen name="Edit Book" component={EditBookScreen} />
     </Stack.Navigator>
   );
 };

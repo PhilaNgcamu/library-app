@@ -1,14 +1,26 @@
 import { Button, ButtonText } from "@gluestack-ui/themed";
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { Entypo } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
+import { setEditingBookId } from "../redux/actions";
 
-const BookDetailsScreen = ({ route, navigation }) => {
+const BookDetailsScreen = ({ route }) => {
   const { bookId } = route.params;
+  const dispatch = useDispatch();
+  const navigation = useNavigation();
 
   const book = useSelector((state) =>
     state.books.books.find((book) => book.id === bookId)
   );
+
+  const handleEditBook = () => {
+    // Dispatch action to set the editing book ID in Redux store
+    dispatch(setEditingBookId(bookId));
+    // Navigate to the edit screen
+    navigation.navigate("Edit Book", { bookId });
+  };
 
   return (
     <View style={styles.container}>
@@ -28,8 +40,18 @@ const BookDetailsScreen = ({ route, navigation }) => {
         <Text style={styles.text}>Book details not found.</Text>
       )}
 
-      <Button bgColor="#32a244" onPress={() => navigation.goBack()}>
+      <Button bgColor="#32a244" onPress={handleEditBook}>
+        <ButtonText>Edit Book</ButtonText>
+        <Entypo name="edit" size={15} color="#fff" />
+      </Button>
+
+      <Button
+        bgColor="#32a244"
+        onPress={() => navigation.goBack()}
+        style={{ marginTop: 20 }}
+      >
         <ButtonText>Go Back</ButtonText>
+        <Entypo name="back" size={15} color="#fff" />
       </Button>
     </View>
   );

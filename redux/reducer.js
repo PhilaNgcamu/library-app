@@ -6,6 +6,7 @@ const initialState = {
   title: "",
   author: "",
   genre: "",
+  editingBookId: null,
 };
 
 const booksReducer = (state = initialState, action) => {
@@ -30,11 +31,16 @@ const booksReducer = (state = initialState, action) => {
         ...state,
         books: [...state.books, action.payload],
       };
-    case actionTypes.UPDATE_BOOK:
+    case actionTypes.SET_EDITING_BOOK_ID:
+      return {
+        ...state,
+        editingBookId: action.payload,
+      };
+    case actionTypes.UPDATE_BOOK_DETAILS:
       return {
         ...state,
         books: state.books.map((book) =>
-          book.id === action.payload.id
+          book.id === action.payload.bookId
             ? {
                 ...book,
                 title: action.payload.title,

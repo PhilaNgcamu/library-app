@@ -24,7 +24,7 @@ const StackNavigator = () => {
           animation: "slide_from_right",
         }}
       />
-      <Stack.Screen name="BookDetailsScreen" component={BookDetailsScreen} />
+      <Stack.Screen name="Book Details" component={BookDetailsScreen} />
     </Stack.Navigator>
   );
 };

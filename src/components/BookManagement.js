@@ -58,7 +58,7 @@ const BookManagement = () => {
     }
 
     const handleViewDetails = () => {
-      navigation.navigate("BookDetailsScreen", { bookId: item.id });
+      navigation.navigate("Book Details", { bookId: item.id });
     };
 
     return (

@@ -1,5 +1,21 @@
 import actionTypes from "./actionTypes";
 
+export const searchBook = (query) => {
+  return async (dispatch) => {
+    try {
+      const response = await fetch(
+        `https://www.googleapis.com/books/v1/volumes?q=${query}`
+      );
+      const data = await response.json();
+      console.log(data);
+
+      dispatch(addBook(data));
+    } catch (error) {
+      console.error("Error searching book:", error);
+    }
+  };
+};
+
 export const addBook = (id, title, author, genre) => ({
   type: actionTypes.ADD_BOOK,
   payload: { id, title, author, genre },

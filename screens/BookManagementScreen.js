@@ -4,13 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { Entypo, MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
-import {
-  addBook,
-  deleteBook,
-  setAuthor,
-  setGenre,
-  setTitle,
-} from "../redux/actions";
+import { addBook, setAuthor, setGenre, setTitle } from "../redux/actions";
 import {
   View,
   Text,
@@ -48,10 +42,6 @@ const BookManagementScreen = () => {
     setSnackbarVisible(true);
   };
 
-  const handleDeleteBook = (id) => {
-    dispatch(deleteBook(id));
-  };
-
   const renderItem = ({ item }) => {
     if (!item) {
       return null;
@@ -64,9 +54,9 @@ const BookManagementScreen = () => {
     return (
       <TouchableOpacity onPress={handleViewDetails}>
         <View style={styles.listItem}>
-          <Text style={styles.title}>{item.title || ""}</Text>
-          <Text style={styles.author}>{item.author || ""}</Text>
-          <Text style={styles.genre}>{item.genre || ""}</Text>
+          <Text style={styles.title}>{item.title}</Text>
+          <Text style={styles.author}>{item.author}</Text>
+          <Text style={styles.genre}>{item.genre}</Text>
           <MaterialIcons
             name="keyboard-arrow-right"
             size={24}
@@ -129,6 +119,9 @@ const BookManagementScreen = () => {
       >
         {snackbarMessage}
       </Snackbar>
+      <Button onPress={() => navigation.navigate("QR Code Scanner")}>
+        <ButtonText>Scan QR Code</ButtonText>
+      </Button>
     </View>
   );
 };

@@ -27,6 +27,7 @@ const booksReducer = (state = initialState, action) => {
         genre: action.payload.genre,
       };
     case actionTypes.ADD_BOOK:
+      console.log(action.payload);
       // If the action.payload is an array, it means it's the data from the Google Books API
       // We'll handle it accordingly
       if (Array.isArray(action.payload)) {

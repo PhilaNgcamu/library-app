@@ -1,10 +1,16 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { Entypo, MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
-import { addBook, setAuthor, setGenre, setTitle } from "../redux/actions";
+import {
+  addBook,
+  searchBook,
+  setAuthor,
+  setGenre,
+  setTitle,
+} from "../redux/actions";
 import {
   View,
   Text,
@@ -24,6 +30,10 @@ const BookManagementScreen = () => {
 
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
+
+  useEffect(() => {
+    dispatch(searchBook("programming"));
+  }, [dispatch]);
 
   const navigation = useNavigation();
 

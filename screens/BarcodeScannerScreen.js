@@ -16,7 +16,7 @@ const QRCodeScannerScreen = ({ navigation }) => {
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
     console.log(data);
-    // Navigate to the book details screen with the scanned QR code data
+
     navigation.navigate("Book Details", { qrCodeData: data });
   };
 

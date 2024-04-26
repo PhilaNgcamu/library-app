@@ -129,7 +129,7 @@ const BookManagementScreen = () => {
       >
         {snackbarMessage}
       </Snackbar>
-      <Button onPress={() => navigation.navigate("QR Code Scanner")}>
+      <Button onPress={() => navigation.navigate("Scan QR Code")}>
         <ButtonText>Scan QR Code</ButtonText>
       </Button>
     </View>

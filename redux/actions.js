@@ -7,9 +7,9 @@ export const searchBook = (query) => {
         `https://www.googleapis.com/books/v1/volumes?q=${query}`
       );
       const data = await response.json();
-      console.log(data);
+      console.log(JSON.stringify(data, null, 2));
 
-      dispatch(addBook(data));
+      dispatch(addBook(data[0]));
     } catch (error) {
       console.error("Error searching book:", error);
     }

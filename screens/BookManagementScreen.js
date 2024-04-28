@@ -32,7 +32,7 @@ const BookManagementScreen = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
-    dispatch(searchBook("programming"));
+    dispatch(searchBook("Christianity"));
   }, [dispatch]);
 
   const navigation = useNavigation();

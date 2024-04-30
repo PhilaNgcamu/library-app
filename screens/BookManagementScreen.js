@@ -32,7 +32,7 @@ const BookManagementScreen = () => {
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   useEffect(() => {
-    dispatch(searchBook("Christianity"));
+    dispatch(searchBook("Coronavirus and Christ"));
   }, [dispatch]);
 
   const navigation = useNavigation();

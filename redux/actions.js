@@ -5,6 +5,7 @@ export const searchBook = (query) => {
     try {
       // Construct the Open Library API endpoint for searching the book title
       const encodedQuery = encodeURIComponent(query);
+      console.log(encodedQuery);
       const endpoint = `https://openlibrary.org/search.json?q=${encodedQuery}`;
 
       // Make a GET request to the Open Library API
@@ -15,13 +16,14 @@ export const searchBook = (query) => {
       if (data.docs && data.docs.length > 0) {
         const book = data.docs[0];
         const { title, author_name, subject } = book;
+        console.log(subject);
 
         // Check if author_name is available and get the first author
         const author =
           author_name && author_name.length > 0 ? author_name[0] : "";
 
         // Check if subject is available and get the first category
-        const category = subject && subject.length > 0 ? subject[0] : "";
+        const category = subject && subject.length > 0 ? subject[1] : "";
 
         // Generate a unique ID for the book (using the OLID)
         const id = book.key.replace("/works/", "");

@@ -1,77 +1,36 @@
 import actionTypes from "./actionTypes";
 
-// export const searchBook = (query) => {
-//   return async (dispatch) => {
-//     try {
-//       const response = await fetch(
-//         `https://www.googleapis.com/books/v1/volumes?q=${query}`
-//       );
-//       const data = await response.json();
-//       console.log(JSON.stringify(data.items[0].volumeInfo, null, 2));
-
-//       const { title, authors, categories } = data.items[0].volumeInfo;
-//       const { id } = data.items[0];
-
-//       console.log(data.items[0]);
-
-//       //  console.log(title, authors, categories);
-
-//       dispatch(addBook(id, title, authors[0], categories[0]));
-//     } catch (error) {
-//       console.error("Error searching book:", error);
-//     }
-//   };
-// };
-
-const fetchGenresFromWikipedia = async (title) => {
-  try {
-    // Replace spaces in the title with underscores for the Wikipedia API query
-    const formattedTitle = title.replace(/\s/g, "_");
-    const response = await fetch(
-      `https://en.wikipedia.org/w/api.php?action=query&format=json&list=search&srsearch=${encodedTitle}`
-    );
-    const data = await response.json();
-
-    // Extract genres or categories from the Wikipedia page summary
-    const genres = data.categories.map((category) => category.title);
-
-    return genres;
-  } catch (error) {
-    console.error("Error fetching genres from Wikipedia:", error);
-    return [];
-  }
-};
-
-// Action creator to search for a book and fetch genres from Wikipedia
 export const searchBook = (query) => {
   return async (dispatch) => {
     try {
-      const response = await fetch(
-        `https://www.googleapis.com/books/v1/volumes?q=${query}`
-      );
+      // Construct the Open Library API endpoint for searching the book title
+      const encodedQuery = encodeURIComponent(query);
+      const endpoint = `https://openlibrary.org/search.json?q=${encodedQuery}`;
+
+      // Make a GET request to the Open Library API
+      const response = await fetch(endpoint);
       const data = await response.json();
 
-      // Fetch genres from Wikipedia for each book
-      const booksWithGenres = await Promise.all(
-        data.items.map(async (book) => {
-          const genres = await fetchGenresFromWikipedia(book.volumeInfo.title);
-          // return {
-          //   ...book,
-          //   genre: genres.length > 0 ? genres.join(", ") : "Unknown",
-          // };
-        })
-      );
+      // Extract book details from the first search result, if available
+      if (data.docs && data.docs.length > 0) {
+        const book = data.docs[0];
+        const { title, author_name, subject } = book;
 
-      const { title, authors, categories } = data.items[0].volumeInfo;
-      const { id } = data.items[0];
+        // Check if author_name is available and get the first author
+        const author =
+          author_name && author_name.length > 0 ? author_name[0] : "";
 
-      // console.log(data.items[0]);
+        // Check if subject is available and get the first category
+        const category = subject && subject.length > 0 ? subject[0] : "";
 
-      //  console.log(title, authors, categories);
+        // Generate a unique ID for the book (using the OLID)
+        const id = book.key.replace("/works/", "");
 
-      // console.log(booksWithGenres);
-
-      // dispatch(addBook(id, title, authors[0], booksWithGenres));
+        // Dispatch action to add the book to the Redux store
+        dispatch(addBook(id, title, author, category));
+      } else {
+        console.log("Book not found");
+      }
     } catch (error) {
       console.error("Error searching book:", error);
     }

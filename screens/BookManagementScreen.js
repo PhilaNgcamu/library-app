@@ -1,77 +1,126 @@
-import React, { useEffect, useState } from "react";
-import { TouchableOpacity, StyleSheet } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  TextInput,
+} from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import { MaterialIcons } from "@expo/vector-icons";
-import { Snackbar } from "react-native-paper";
-import { searchBook } from "../redux/actions";
-import { View, Text, Button, FlatList, ButtonText } from "@gluestack-ui/themed";
+import { Button, ButtonText } from "@gluestack-ui/themed";
 
 const BookManagementScreen = () => {
+  const [sortBy, setSortBy] = useState(null);
+  const [filterBy, setFilterBy] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [pageNumber, setPageNumber] = useState(1);
+  const booksPerPage = 10; // Number of books to display per page
+
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.books);
-  const title = useSelector((state) => state.books.title);
-  const author = useSelector((state) => state.books.author);
-  const genre = useSelector((state) => state.books.genre);
-
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
-
-  useEffect(() => {
-    dispatch(searchBook("Coronavirus and Christ"));
-  }, [dispatch]);
-
   const navigation = useNavigation();
 
-  const renderItem = ({ item }) => {
-    if (!item) {
-      return null;
-    }
+  const handleViewDetails = (bookId) => {
+    navigation.navigate("Book Details", { bookId });
+  };
 
-    const handleViewDetails = () => {
-      navigation.navigate("Book Details", { bookId: item.id });
-    };
+  const handleSort = (sortBy) => {
+    setSortBy(sortBy);
+  };
 
+  const handleFilter = (filterBy) => {
+    setFilterBy(filterBy);
+    // Perform filtering logic based on filterBy criteria
+  };
+
+  const handleSearch = () => {
+    // Perform search logic based on searchQuery
+  };
+
+  const renderBookItem = ({ item }) => {
     return (
-      <TouchableOpacity onPress={handleViewDetails}>
-        <View style={styles.listItem}>
-          <Text style={styles.title}>{item.title}</Text>
-          <Text style={styles.author}>{item.author}</Text>
-          <Text style={styles.genre}>{item.genre}</Text>
-          <MaterialIcons
-            name="keyboard-arrow-right"
-            size={24}
-            color="black"
-            style={{
-              marginLeft: "auto",
-              position: "absolute",
-              top: "50%",
-              right: 10,
-            }}
-          />
+      <TouchableOpacity
+        style={styles.bookItem}
+        onPress={() => handleViewDetails(item.id)}
+      >
+        <Image
+          source={{ uri: item.coverUrl }}
+          style={styles.bookCover}
+          resizeMode="cover"
+        />
+        <View style={styles.bookInfoContainer}>
+          <Text style={styles.bookTitle}>{item.title}</Text>
+          <Text style={styles.bookAuthor}>by {item.author}</Text>
         </View>
       </TouchableOpacity>
     );
   };
 
+  const renderEmptyState = () => {
+    return (
+      <View style={styles.emptyStateContainer}>
+        <Text style={styles.emptyStateText}>No books available</Text>
+        <Button onPress={() => navigation.navigate("Scan QR Code")}>
+          <ButtonText>Add New Book</ButtonText>
+        </Button>
+      </View>
+    );
+  };
+
   return (
     <View style={styles.container}>
-      <FlatList
-        data={books}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.id.toString()}
-      />
+      <View style={styles.searchContainer}>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Search books..."
+          value={searchQuery}
+          onChangeText={setSearchQuery}
+          onSubmitEditing={handleSearch}
+        />
+        <Button
+          style={{
+            backgroundColor: "#32a244",
+          }}
+          onPress={handleSearch}
+        >
+          <ButtonText>Search</ButtonText>
+        </Button>
+      </View>
 
-      <Snackbar
-        visible={snackbarVisible}
-        style={{
-          backgroundColor: "#32a244",
-        }}
-        onDismiss={() => setSnackbarVisible(false)}
-        duration={3000}
-      >
-        {snackbarMessage}
-      </Snackbar>
+      <View style={styles.sortContainer}>
+        <Button
+          style={{
+            backgroundColor: "#32a244",
+          }}
+          onPress={() => handleSort("title")}
+        >
+          <ButtonText>Sort By Title</ButtonText>
+        </Button>
+        <Button
+          style={{
+            backgroundColor: "#32a244",
+          }}
+          onPress={() => handleSort("author")}
+        >
+          <ButtonText>Sort By Author</ButtonText>
+        </Button>
+      </View>
+
+      {books.length === 0 ? (
+        renderEmptyState()
+      ) : (
+        <FlatList
+          data={books.slice(0, pageNumber * booksPerPage)}
+          renderItem={renderBookItem}
+          keyExtractor={(item) => item.id.toString()}
+          numColumns={2}
+          contentContainerStyle={styles.bookList}
+        />
+      )}
+
       <Button onPress={() => navigation.navigate("Scan QR Code")}>
         <ButtonText>Scan QR Code</ButtonText>
       </Button>
@@ -82,35 +131,69 @@ const BookManagementScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
+    padding: 10,
     backgroundColor: "#f0f0f0",
   },
-
-  input: {
+  searchContainer: {
+    flexDirection: "row",
+    alignItems: "center",
     marginBottom: 10,
-    borderColor: "#32a244",
   },
-  addButton: {
-    alignSelf: "flex-end",
-    backgroundColor: "#32a244",
-  },
-  listItem: {
-    padding: 10,
-    marginBottom: 10,
-    backgroundColor: "#ddd",
+  searchInput: {
+    flex: 1,
+    borderWidth: 1,
+    borderColor: "#ccc",
     borderRadius: 5,
+    padding: 10,
+    marginRight: 10,
   },
-  title: {
-    fontSize: 25,
-    fontWeight: "bold",
+  filterContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
     marginBottom: 10,
   },
-  author: {
-    fontSize: 16,
+  sortContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginBottom: 10,
   },
-  genre: {
+  bookList: {
+    paddingBottom: 80,
+  },
+  bookItem: {
+    flex: 1,
+    margin: 5,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    elevation: 3,
+    overflow: "hidden",
+  },
+  bookCover: {
+    width: "100%",
+    aspectRatio: 2 / 3,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
+  bookInfoContainer: {
+    padding: 10,
+  },
+  bookTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  bookAuthor: {
     fontSize: 14,
-    fontStyle: "italic",
+    color: "#666",
+  },
+  emptyStateContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyStateText: {
+    fontSize: 18,
+    marginBottom: 20,
   },
 });
 

@@ -1,35 +1,23 @@
 import actionTypes from "./actionTypes";
 
-export const searchBook = (query) => {
+export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
   return async (dispatch) => {
     try {
-      // Construct the Open Library API endpoint for searching the book title
-      const encodedQuery = encodeURIComponent(query);
-      console.log(encodedQuery);
-      const endpoint = `https://openlibrary.org/search.json?q=${encodedQuery}`;
+      // Construct the API endpoint URL with pagination parameters
+      const endpoint = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&startIndex=${startIndex}&maxResults=${maxResults}`;
 
-      // Make a GET request to the Open Library API
       const response = await fetch(endpoint);
       const data = await response.json();
 
-      // Extract book details from the first search result, if available
-      if (data.docs && data.docs.length > 0) {
-        const book = data.docs[0];
-        const { title, author_name, subject } = book;
-        console.log(subject);
+      if (data.items && data.items.length > 0) {
+        const bookInfo = data.items[0].volumeInfo;
+        const { title, authors, categories, imageLinks } = bookInfo;
 
-        // Check if author_name is available and get the first author
-        const author =
-          author_name && author_name.length > 0 ? author_name[0] : "";
+        console.log(endpoint);
 
-        // Check if subject is available and get the first category
-        const category = subject && subject.length > 0 ? subject[1] : "";
+        const coverUrl = imageLinks ? imageLinks.thumbnail : null;
 
-        // Generate a unique ID for the book (using the OLID)
-        const id = book.key.replace("/works/", "");
-
-        // Dispatch action to add the book to the Redux store
-        dispatch(addBook(id, title, author, category));
+        dispatch(addBook(isbn, title, authors[0], categories[0], coverUrl));
       } else {
         console.log("Book not found");
       }
@@ -39,9 +27,9 @@ export const searchBook = (query) => {
   };
 };
 
-export const addBook = (id, title, author, genre) => ({
+export const addBook = (id, title, author, genre, coverUrl) => ({
   type: actionTypes.ADD_BOOK,
-  payload: { id, title, author, genre },
+  payload: { id, title, author, genre, coverUrl },
 });
 
 export const setEditingBookId = (id) => ({

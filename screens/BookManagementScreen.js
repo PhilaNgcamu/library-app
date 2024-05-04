@@ -2,24 +2,10 @@ import React, { useEffect, useState } from "react";
 import { TouchableOpacity, StyleSheet } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import { Entypo, MaterialIcons } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
-import {
-  addBook,
-  searchBook,
-  setAuthor,
-  setGenre,
-  setTitle,
-} from "../redux/actions";
-import {
-  View,
-  Text,
-  Button,
-  FlatList,
-  Input,
-  InputField,
-  ButtonText,
-} from "@gluestack-ui/themed";
+import { searchBook } from "../redux/actions";
+import { View, Text, Button, FlatList, ButtonText } from "@gluestack-ui/themed";
 
 const BookManagementScreen = () => {
   const dispatch = useDispatch();
@@ -36,21 +22,6 @@ const BookManagementScreen = () => {
   }, [dispatch]);
 
   const navigation = useNavigation();
-
-  const handleAddBook = () => {
-    if (!title.trim() || !author.trim() || !genre.trim()) {
-      alert("Please enter all book details");
-      return;
-    }
-    const id = "_" + Math.random().toString(36).substring(2, 9);
-    dispatch(addBook(id, title, author, genre));
-    dispatch(setTitle(""));
-    dispatch(setAuthor(""));
-    dispatch(setGenre(""));
-
-    setSnackbarMessage("Book added successfully!");
-    setSnackbarVisible(true);
-  };
 
   const renderItem = ({ item }) => {
     if (!item) {
@@ -85,34 +56,6 @@ const BookManagementScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.formContainer}>
-        <Text style={styles.title}>Add Book</Text>
-        <Input style={styles.input}>
-          <InputField
-            value={title}
-            onChangeText={(text) => dispatch(setTitle(text))}
-            placeholder="Title"
-          />
-        </Input>
-        <Input style={styles.input}>
-          <InputField
-            value={author}
-            onChangeText={(text) => dispatch(setAuthor(text))}
-            placeholder="Author"
-          />
-        </Input>
-        <Input style={styles.input}>
-          <InputField
-            value={genre}
-            onChangeText={(text) => dispatch(setGenre(text))}
-            placeholder="Genre"
-          />
-        </Input>
-        <Button onPress={handleAddBook} style={styles.addButton}>
-          <ButtonText>Add Book </ButtonText>
-          <Entypo name="plus" size={15} color="#fff" />
-        </Button>
-      </View>
       <FlatList
         data={books}
         renderItem={renderItem}
@@ -143,9 +86,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#f0f0f0",
   },
 
-  formContainer: {
-    marginBottom: 20,
-  },
   input: {
     marginBottom: 10,
     borderColor: "#32a244",

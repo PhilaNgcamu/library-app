@@ -11,13 +11,15 @@ import {
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { Button, ButtonText } from "@gluestack-ui/themed";
+import { Picker } from "@react-native-picker/picker";
+import { AntDesign } from "@expo/vector-icons";
 
 const BookManagementScreen = () => {
   const [sortBy, setSortBy] = useState(null);
   const [filterBy, setFilterBy] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
-  const booksPerPage = 10; // Number of books to display per page
+  const booksPerPage = 10;
 
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.books);
@@ -33,7 +35,6 @@ const BookManagementScreen = () => {
 
   const handleFilter = (filterBy) => {
     setFilterBy(filterBy);
-    // Perform filtering logic based on filterBy criteria
   };
 
   const handleSearch = () => {
@@ -63,7 +64,10 @@ const BookManagementScreen = () => {
     return (
       <View style={styles.emptyStateContainer}>
         <Text style={styles.emptyStateText}>No books available</Text>
-        <Button onPress={() => navigation.navigate("Scan QR Code")}>
+        <Button
+          style={{ backgroundColor: "#32a244" }}
+          onPress={() => navigation.navigate("Scan QR Code")}
+        >
           <ButtonText>Add New Book</ButtonText>
         </Button>
       </View>
@@ -83,30 +87,35 @@ const BookManagementScreen = () => {
         <Button
           style={{
             backgroundColor: "#32a244",
+            textAlign: "center",
           }}
           onPress={handleSearch}
         >
-          <ButtonText>Search</ButtonText>
+          <AntDesign name="search1" size={24} color="white" />
         </Button>
       </View>
 
-      <View style={styles.sortContainer}>
-        <Button
-          style={{
-            backgroundColor: "#32a244",
-          }}
-          onPress={() => handleSort("title")}
-        >
-          <ButtonText>Sort By Title</ButtonText>
-        </Button>
-        <Button
-          style={{
-            backgroundColor: "#32a244",
-          }}
-          onPress={() => handleSort("author")}
-        >
-          <ButtonText>Sort By Author</ButtonText>
-        </Button>
+      <View style={styles.sortFilterContainer}>
+        <View style={styles.sortContainer}>
+          <Picker
+            selectedValue={sortBy}
+            style={{ height: 50, width: 150 }}
+            onValueChange={(itemValue) => handleSort(itemValue)}
+          >
+            <Picker.Item label="Sort By Title" value="title" />
+            <Picker.Item label="Sort By Author" value="author" />
+          </Picker>
+        </View>
+        <View style={styles.filterContainer}>
+          <Picker
+            selectedValue={filterBy}
+            style={{ height: 50, width: 150 }}
+            onValueChange={(itemValue) => handleFilter(itemValue)}
+          >
+            <Picker.Item label="Filter By Genre" value="genre" />
+            <Picker.Item label="Filter By Availability" value="availability" />
+          </Picker>
+        </View>
       </View>
 
       {books.length === 0 ? (
@@ -138,24 +147,29 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
   },
   searchInput: {
     flex: 1,
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    padding: 10,
+    padding: 5,
     marginRight: 10,
   },
-  filterContainer: {
+  sortFilterContainer: {
     flexDirection: "row",
-    justifyContent: "space-around",
+    justifyContent: "space-between",
     marginBottom: 10,
   },
   sortContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginBottom: 10,
+    flex: 1,
+    marginRight: 5,
+  },
+  filterContainer: {
+    flex: 1,
+    marginLeft: 5,
   },
   bookList: {
     paddingBottom: 80,

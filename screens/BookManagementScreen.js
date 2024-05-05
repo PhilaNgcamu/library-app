@@ -7,18 +7,21 @@ import {
   Image,
   TouchableOpacity,
   TextInput,
+  Modal,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const BookManagementScreen = () => {
   const [sortBy, setSortBy] = useState(null);
   const [filterBy, setFilterBy] = useState(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
+  const [showNoBooksModal, setShowNoBooksModal] = useState(false); // State for showing modal
   const booksPerPage = 10;
 
   const dispatch = useDispatch();
@@ -38,7 +41,15 @@ const BookManagementScreen = () => {
   };
 
   const handleSearch = () => {
-    // Perform search logic based on searchQuery
+    const filteredBooks = books.filter((book) =>
+      book.title.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    if (filteredBooks.length === 0) {
+      setShowNoBooksModal(true);
+    } else {
+      // Perform search logic based on searchQuery
+    }
   };
 
   const renderBookItem = ({ item }) => {
@@ -63,13 +74,8 @@ const BookManagementScreen = () => {
   const renderEmptyState = () => {
     return (
       <View style={styles.emptyStateContainer}>
+        <MaterialIcons name="library-books" size={100} color="black" />
         <Text style={styles.emptyStateText}>No books available</Text>
-        <Button
-          style={{ backgroundColor: "#32a244" }}
-          onPress={() => navigation.navigate("Scan QR Code")}
-        >
-          <ButtonText>Add New Book</ButtonText>
-        </Button>
       </View>
     );
   };
@@ -130,9 +136,39 @@ const BookManagementScreen = () => {
         />
       )}
 
-      <Button onPress={() => navigation.navigate("Scan QR Code")}>
-        <ButtonText>Scan QR Code</ButtonText>
+      <Button
+        style={{ backgroundColor: "#32a244" }}
+        onPress={() => navigation.navigate("Scan QR Code")}
+      >
+        <ButtonText>Add New Book</ButtonText>
       </Button>
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showNoBooksModal}
+        onRequestClose={() => setShowNoBooksModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text
+              style={{
+                fontSize: 20,
+                fontWeight: "bold",
+                marginBottom: 10,
+              }}
+            >
+              Oops!
+            </Text>
+            <Text style={styles.modalText}>No books found.</Text>
+            <Button
+              style={styles.modalButton}
+              onPress={() => setShowNoBooksModal(false)}
+            >
+              <ButtonText>Search Again</ButtonText>
+            </Button>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -208,6 +244,30 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 18,
     marginBottom: 20,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.7)",
+  },
+  modalContent: {
+    backgroundColor: "white",
+    padding: 30,
+    borderRadius: 10,
+    alignItems: "center",
+    elevation: 5,
+  },
+  modalText: {
+    fontSize: 18,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalButton: {
+    backgroundColor: "#32a244",
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    borderRadius: 5,
   },
 });
 

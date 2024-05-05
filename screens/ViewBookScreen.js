@@ -7,25 +7,34 @@ import {
   ScrollView,
   TouchableOpacity,
   Modal,
+  Dimensions, // Import Dimensions from react-native
 } from "react-native";
-import { useSelector } from "react-redux";
 import { Button, ButtonText } from "@gluestack-ui/themed";
+import { useDispatch, useSelector } from "react-redux";
 
 const ViewBookScreen = ({ navigation, route }) => {
   const { bookId } = route.params;
   const [isBorrowing, setIsBorrowing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
-
+  const [available, setAvailable] = useState(true);
+  const [showFullDescription, setShowFullDescription] = useState(false);
   const book = useSelector((state) =>
     state.books.books.find((book) => book.id === bookId)
   );
+  const dispatch = useDispatch();
 
   const handleBorrow = () => {
     setIsBorrowing(true);
     setTimeout(() => {
       setIsModalVisible(true);
       setIsBorrowing(false);
+      setAvailable(false);
     }, 1500);
+  };
+
+  const handleScan = () => {
+    console.log("Scanning the book:", bookId);
+    setAvailable(true);
   };
 
   const closeModal = () => {
@@ -52,8 +61,21 @@ const ViewBookScreen = ({ navigation, route }) => {
         </View>
         <View style={styles.row}>
           <Text style={styles.label}>Description:</Text>
-          <View style={styles.descriptionContainer}>
-            <Text style={styles.description}>{book.description}</Text>
+          <View
+            style={[
+              styles.descriptionContainer,
+              { maxWidth: Dimensions.get("window").width * 0.7 },
+            ]}
+          >
+            <TouchableOpacity
+              onPress={() => setShowFullDescription(!showFullDescription)}
+            >
+              <Text style={styles.description}>
+                {showFullDescription
+                  ? book.description
+                  : `${book.description.substring(0, 100)}... See more`}
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.row}>
@@ -68,6 +90,12 @@ const ViewBookScreen = ({ navigation, route }) => {
           <Text style={styles.label}>Language:</Text>
           <Text style={styles.text}>{book.language}</Text>
         </View>
+        <View style={styles.row}>
+          <Text style={styles.label}>Availability:</Text>
+          <Text style={[styles.text, { color: available ? "green" : "red" }]}>
+            {available ? "Available" : "Not Available"}
+          </Text>
+        </View>
         <View style={styles.buttonsContainer}>
           <Button
             bgColor="#32a244"
@@ -76,6 +104,9 @@ const ViewBookScreen = ({ navigation, route }) => {
             disabled={isBorrowing}
           >
             <ButtonText>{isBorrowing ? "Borrowing..." : "Borrow"}</ButtonText>
+          </Button>
+          <Button bgColor="#32a244" onPress={handleScan} style={styles.button}>
+            <ButtonText>Scan</ButtonText>
           </Button>
         </View>
       </View>
@@ -121,7 +152,6 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     padding: 20,
-    elevation: 2,
   },
   row: {
     flexDirection: "row",
@@ -135,14 +165,18 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 16,
-    width: "65%",
+    width: "70%",
+    marginTop: 2,
+    color: "#777",
   },
   descriptionContainer: {
-    maxWidth: "70%",
+    width: "70%",
+    textAlign: "left",
   },
   description: {
     fontSize: 16,
     textAlign: "justify",
+    marginTop: 2,
   },
   buttonsContainer: {
     flexDirection: "row",

@@ -29,7 +29,7 @@ const BookManagementScreen = () => {
   const navigation = useNavigation();
 
   const handleViewDetails = (bookId) => {
-    navigation.navigate("Book Details", { bookId });
+    navigation.navigate("View Book", { bookId });
   };
 
   const handleSort = (sortBy) => {
@@ -118,7 +118,6 @@ const BookManagementScreen = () => {
             style={{ height: 50, width: 150 }}
             onValueChange={(itemValue) => handleFilter(itemValue)}
           >
-            <Picker.Item label="Filter By Genre" value="genre" />
             <Picker.Item label="Filter By Availability" value="availability" />
           </Picker>
         </View>

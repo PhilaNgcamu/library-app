@@ -1,10 +1,9 @@
 import { createStackNavigator } from "@react-navigation/stack";
 import { NavigationContainer } from "@react-navigation/native";
 import React from "react";
-import BookDetailsScreen from "./BookDetailsScreen";
 import BookManagementScreen from "./BookManagementScreen";
-import EditBookScreen from "./EditBookScreen";
 import QRCodeScannerScreen from "./BarcodeScannerScreen";
+import ViewBookScreen from "./ViewBookScreen";
 
 const Stack = createStackNavigator();
 
@@ -26,8 +25,8 @@ const StackNavigator = () => {
           animation: "slide_from_right",
         }}
       />
-      <Stack.Screen name="Book Details" component={BookDetailsScreen} />
-      <Stack.Screen name="Edit Book" component={EditBookScreen} />
+
+      <Stack.Screen name="View Book" component={ViewBookScreen} />
       <Stack.Screen name="Scan QR Code" component={QRCodeScannerScreen} />
     </Stack.Navigator>
   );

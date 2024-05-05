@@ -27,7 +27,6 @@ const booksReducer = (state = initialState, action) => {
         genre: action.payload.genre,
       };
     case actionTypes.ADD_BOOK:
-      // console.log(action.payload);
       // If the action.payload is an array, it means it's the data from the Google Books API
       // We'll handle it accordingly
       if (Array.isArray(action.payload)) {
@@ -40,6 +39,19 @@ const booksReducer = (state = initialState, action) => {
           genre: book.volumeInfo.categories
             ? book.volumeInfo.categories.join(", ")
             : "Unknown",
+          description: book.volumeInfo.description
+            ? book.volumeInfo.description
+            : "No description available",
+          pageCount: book.volumeInfo.pageCount ? book.volumeInfo.pageCount : 0,
+          publishedDate: book.volumeInfo.publishedDate
+            ? book.volumeInfo.publishedDate
+            : "Unknown",
+          language: book.volumeInfo.language
+            ? book.volumeInfo.language
+            : "Unknown",
+          coverUrl: book.volumeInfo.imageLinks
+            ? book.volumeInfo.imageLinks.thumbnail
+            : null,
         }));
         return {
           ...state,
@@ -52,7 +64,6 @@ const booksReducer = (state = initialState, action) => {
         ...state,
         books: [...state.books, action.payload],
       };
-
     case actionTypes.SET_EDITING_BOOK_ID:
       return {
         ...state,

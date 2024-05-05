@@ -3,21 +3,42 @@ import actionTypes from "./actionTypes";
 export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
   return async (dispatch) => {
     try {
-      // Construct the API endpoint URL with pagination parameters
       const endpoint = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&startIndex=${startIndex}&maxResults=${maxResults}`;
+      console.log(endpoint);
 
       const response = await fetch(endpoint);
       const data = await response.json();
 
       if (data.items && data.items.length > 0) {
         const bookInfo = data.items[0].volumeInfo;
-        const { title, authors, categories, imageLinks } = bookInfo;
+        const {
+          title,
+          authors,
+          categories,
+          imageLinks,
+          description,
+          pageCount,
+          publishedDate,
+          language,
+        } = bookInfo;
 
         console.log(endpoint);
 
         const coverUrl = imageLinks ? imageLinks.thumbnail : null;
 
-        dispatch(addBook(isbn, title, authors[0], categories[0], coverUrl));
+        dispatch(
+          addBook(
+            isbn,
+            title,
+            authors[0],
+            categories[0],
+            coverUrl,
+            description,
+            pageCount || 300,
+            publishedDate,
+            language
+          )
+        );
       } else {
         console.log("Book not found");
       }
@@ -27,9 +48,29 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
   };
 };
 
-export const addBook = (id, title, author, genre, coverUrl) => ({
+export const addBook = (
+  id,
+  title,
+  author,
+  genre,
+  coverUrl,
+  description,
+  pageCount,
+  publishedDate,
+  language
+) => ({
   type: actionTypes.ADD_BOOK,
-  payload: { id, title, author, genre, coverUrl },
+  payload: {
+    id,
+    title,
+    author,
+    genre,
+    coverUrl,
+    description,
+    pageCount,
+    publishedDate,
+    language,
+  },
 });
 
 export const setEditingBookId = (id) => ({

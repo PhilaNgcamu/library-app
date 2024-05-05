@@ -1,20 +1,25 @@
-import React, { useState, useEffect } from "react";
-import { Text, View, StyleSheet, Button } from "react-native";
+import React, { useCallback, useState } from "react";
+import { Text, View, StyleSheet } from "react-native";
 import { Camera } from "expo-camera";
 import { useDispatch } from "react-redux";
+import { useFocusEffect } from "@react-navigation/native"; // Import useFocusEffect from @react-navigation/native
 import { searchBook } from "../redux/actions";
+import { Button, ButtonText } from "@gluestack-ui/themed";
 
 const QRCodeScannerScreen = ({ navigation }) => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const dispatch = useDispatch();
 
-  useEffect(() => {
-    (async () => {
-      const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === "granted");
-    })();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      (async () => {
+        const { status } = await Camera.requestCameraPermissionsAsync();
+        setHasPermission(status === "granted");
+      })();
+      return () => {};
+    }, [])
+  );
 
   const handleBarCodeScanned = ({ type, data }) => {
     setScanned(true);
@@ -26,8 +31,6 @@ const QRCodeScannerScreen = ({ navigation }) => {
 
     // Search for the book using the ISBN
     dispatch(searchBook(isbn));
-
-    navigation.navigate("Book Details", { qrCodeData: data });
   };
 
   const extractISBN = (qrCodeData) => {
@@ -52,7 +55,13 @@ const QRCodeScannerScreen = ({ navigation }) => {
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
       />
       {scanned && (
-        <Button title={"Tap to Scan Again"} onPress={() => setScanned(false)} />
+        <Button
+          style={{ backgroundColor: "#32a244" }}
+          title={"Tap to Scan Again"}
+          onPress={() => setScanned(false)}
+        >
+          <ButtonText>Tap to Scan Again</ButtonText>
+        </Button>
       )}
     </View>
   );

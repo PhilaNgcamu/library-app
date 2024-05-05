@@ -2,7 +2,7 @@ import React, { useCallback, useState } from "react";
 import { Text, View, StyleSheet } from "react-native";
 import { Camera } from "expo-camera";
 import { useDispatch } from "react-redux";
-import { useFocusEffect } from "@react-navigation/native"; // Import useFocusEffect from @react-navigation/native
+import { useFocusEffect } from "@react-navigation/native";
 import { searchBook } from "../redux/actions";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 
@@ -25,16 +25,13 @@ const QRCodeScannerScreen = ({ navigation }) => {
     setScanned(true);
     console.log(data);
 
-    // Extract ISBN from the scanned QR code
     const isbn = extractISBN(data);
     console.log("ISBN:", isbn);
 
-    // Search for the book using the ISBN
     dispatch(searchBook(isbn));
   };
 
   const extractISBN = (qrCodeData) => {
-    // Assuming the QR code contains the ISBN directly
     const regex = /\b\d{10,13}\b/;
     const match = qrCodeData.match(regex);
     return match ? match[0] : null;

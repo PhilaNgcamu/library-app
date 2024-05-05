@@ -7,7 +7,7 @@ import {
   ScrollView,
   TouchableOpacity,
   Modal,
-  Dimensions, // Import Dimensions from react-native
+  Dimensions,
 } from "react-native";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 import { useDispatch, useSelector } from "react-redux";
@@ -30,11 +30,6 @@ const ViewBookScreen = ({ navigation, route }) => {
       setIsBorrowing(false);
       setAvailable(false);
     }, 1500);
-  };
-
-  const handleScan = () => {
-    console.log("Scanning the book:", bookId);
-    setAvailable(true);
   };
 
   const closeModal = () => {
@@ -104,9 +99,6 @@ const ViewBookScreen = ({ navigation, route }) => {
             disabled={isBorrowing}
           >
             <ButtonText>{isBorrowing ? "Borrowing..." : "Borrow"}</ButtonText>
-          </Button>
-          <Button bgColor="#32a244" onPress={handleScan} style={styles.button}>
-            <ButtonText>Scan</ButtonText>
           </Button>
         </View>
       </View>

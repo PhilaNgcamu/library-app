@@ -27,8 +27,6 @@ const booksReducer = (state = initialState, action) => {
         genre: action.payload.genre,
       };
     case actionTypes.ADD_BOOK:
-      // If the action.payload is an array, it means it's the data from the Google Books API
-      // We'll handle it accordingly
       if (Array.isArray(action.payload)) {
         const booksToAdd = action.payload.map((book) => ({
           id: book.id,
@@ -58,8 +56,6 @@ const booksReducer = (state = initialState, action) => {
           books: [...state.books, ...booksToAdd],
         };
       }
-      // If the action.payload is a single book object, it means it's added directly
-      // We'll handle it the same way as before
       return {
         ...state,
         books: [...state.books, action.payload],

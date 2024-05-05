@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -15,18 +15,31 @@ import { Button, ButtonText } from "@gluestack-ui/themed";
 import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
+import { Snackbar } from "react-native-paper";
 
 const BookManagementScreen = () => {
-  const [sortBy, setSortBy] = useState(null);
-  const [filterBy, setFilterBy] = useState(null);
+  const defaultSortBy = "title";
+  const defaultFilterBy = "availability";
+
+  const [sortBy, setSortBy] = useState(defaultSortBy);
+  const [filterBy, setFilterBy] = useState(defaultFilterBy);
   const [searchQuery, setSearchQuery] = useState("");
   const [pageNumber, setPageNumber] = useState(1);
-  const [showNoBooksModal, setShowNoBooksModal] = useState(false); // State for showing modal
+  const [showNoBooksModal, setShowNoBooksModal] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
   const booksPerPage = 10;
 
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.books);
   const navigation = useNavigation();
+
+  const [filteredBooks, setFilteredBooks] = useState([]);
+  const [sortedBooks, setSortedBooks] = useState([]);
+
+  useEffect(() => {
+    handleSort(defaultSortBy);
+    handleFilter(defaultFilterBy);
+  }, []);
 
   const handleViewDetails = (bookId) => {
     navigation.navigate("View Book", { bookId });
@@ -34,21 +47,39 @@ const BookManagementScreen = () => {
 
   const handleSort = (sortBy) => {
     setSortBy(sortBy);
+    const sorted = [...books].sort((a, b) => {
+      if (sortBy === "title") {
+        return a.title.localeCompare(b.title);
+      } else if (sortBy === "author") {
+        return a.author.localeCompare(b.author);
+      }
+    });
+    setSortedBooks(sorted);
   };
 
   const handleFilter = (filterBy) => {
     setFilterBy(filterBy);
+    const filtered = books.filter((book) => {
+      if (filterBy === "availability") {
+        return book.title;
+      }
+    });
+    setFilteredBooks(filtered);
   };
 
   const handleSearch = () => {
-    const filteredBooks = books.filter((book) =>
-      book.title.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filtered = books.filter((book) => {
+      return book.title
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase().trim());
+    });
 
-    if (filteredBooks.length === 0) {
+    if (filtered.length === 0) {
       setShowNoBooksModal(true);
     } else {
-      // Perform search logic based on searchQuery
+      setFilteredBooks(filtered);
+      setSortedBooks([]);
+      setSnackbarVisible(true);
     }
   };
 
@@ -57,6 +88,7 @@ const BookManagementScreen = () => {
       <TouchableOpacity
         style={styles.bookItem}
         onPress={() => handleViewDetails(item.id)}
+        activeOpacity={1}
       >
         <Image
           source={{ uri: item.coverUrl }}
@@ -127,7 +159,7 @@ const BookManagementScreen = () => {
         renderEmptyState()
       ) : (
         <FlatList
-          data={books.slice(0, pageNumber * booksPerPage)}
+          data={sortedBooks.length > 0 ? sortedBooks : filteredBooks}
           renderItem={renderBookItem}
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}
@@ -158,7 +190,7 @@ const BookManagementScreen = () => {
             >
               Oops!
             </Text>
-            <Text style={styles.modalText}>No books found.</Text>
+            <Text style={styles.modalText}>No books found</Text>
             <Button
               style={styles.modalButton}
               onPress={() => setShowNoBooksModal(false)}
@@ -168,6 +200,18 @@ const BookManagementScreen = () => {
           </View>
         </View>
       </Modal>
+      <Snackbar
+        visible={snackbarVisible}
+        style={{ backgroundColor: "#32a244" }}
+        onDismiss={() => setSnackbarVisible(false)}
+        duration={2000}
+        action={{
+          textColor: "white",
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        Book found!
+      </Snackbar>
     </View>
   );
 };

@@ -1,14 +1,36 @@
-import React from "react";
-import { View, Text, StyleSheet, Image, ScrollView } from "react-native";
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  ScrollView,
+  TouchableOpacity,
+  Modal,
+} from "react-native";
 import { useSelector } from "react-redux";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 
 const ViewBookScreen = ({ navigation, route }) => {
   const { bookId } = route.params;
+  const [isBorrowing, setIsBorrowing] = useState(false);
+  const [isModalVisible, setIsModalVisible] = useState(false);
 
   const book = useSelector((state) =>
     state.books.books.find((book) => book.id === bookId)
   );
+
+  const handleBorrow = () => {
+    setIsBorrowing(true);
+    setTimeout(() => {
+      setIsModalVisible(true);
+      setIsBorrowing(false);
+    }, 1500);
+  };
+
+  const closeModal = () => {
+    setIsModalVisible(false);
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -46,7 +68,35 @@ const ViewBookScreen = ({ navigation, route }) => {
           <Text style={styles.label}>Language:</Text>
           <Text style={styles.text}>{book.language}</Text>
         </View>
+        <View style={styles.buttonsContainer}>
+          <Button
+            bgColor="#32a244"
+            onPress={handleBorrow}
+            style={styles.button}
+            disabled={isBorrowing}
+          >
+            <ButtonText>{isBorrowing ? "Borrowing..." : "Borrow"}</ButtonText>
+          </Button>
+        </View>
       </View>
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={closeModal}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modal}>
+            <Text style={styles.modalTitle}>Success</Text>
+            <Text style={styles.modalMessage}>
+              You have borrowed {book.title}
+            </Text>
+            <TouchableOpacity onPress={closeModal} style={styles.modalButton}>
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
@@ -93,6 +143,46 @@ const styles = StyleSheet.create({
   description: {
     fontSize: 16,
     textAlign: "justify",
+  },
+  buttonsContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
+    marginTop: 20,
+  },
+  button: {
+    marginHorizontal: 10,
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modal: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalMessage: {
+    fontSize: 16,
+    marginBottom: 20,
+    textAlign: "center",
+  },
+  modalButton: {
+    backgroundColor: "#32a244",
+    padding: 10,
+    borderRadius: 5,
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

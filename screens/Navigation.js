@@ -34,6 +34,9 @@ const TabNavigator = () => {
       screenOptions={{
         tabBarActiveTintColor: "#32a244",
         tabBarInactiveTintColor: "gray",
+        tabBarLabelStyle: {
+          fontSize: 12,
+        },
         tabBarStyle: {
           backgroundColor: "#fff",
           borderTopColor: "#32a244",

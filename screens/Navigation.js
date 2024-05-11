@@ -71,6 +71,9 @@ const TabNavigator = () => {
         name="Scan QR Code"
         component={QRCodeScannerScreen}
         options={{
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
           tabBarLabel: "Add New Book",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="plus" color={color} size={size} />

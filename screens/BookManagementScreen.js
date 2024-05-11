@@ -166,13 +166,6 @@ const BookManagementScreen = () => {
           contentContainerStyle={styles.bookList}
         />
       )}
-
-      <Button
-        style={{ backgroundColor: "#32a244" }}
-        onPress={() => navigation.navigate("Scan QR Code")}
-      >
-        <ButtonText>Add New Book</ButtonText>
-      </Button>
       <Modal
         animationType="slide"
         transparent={true}

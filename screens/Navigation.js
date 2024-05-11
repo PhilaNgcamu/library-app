@@ -40,7 +40,8 @@ const TabNavigator = () => {
           borderTopWidth: 0.5,
           height: 60,
           paddingBottom: 10,
-          paddingTop: 10,
+          paddingHorizontal: 10,
+          paddingVertical: 5,
         },
         tabBarHideOnKeyboard: true,
       }}

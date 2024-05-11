@@ -70,12 +70,23 @@ export const addBook = (
     pageCount,
     publishedDate,
     language,
+    available: true,
   },
 });
 
 export const setEditingBookId = (id) => ({
   type: actionTypes.SET_EDITING_BOOK_ID,
   payload: { id },
+});
+
+export const borrowBook = (bookId) => ({
+  type: actionTypes.BORROW_BOOK,
+  payload: { bookId },
+});
+
+export const returnBook = (bookId) => ({
+  type: actionTypes.RETURN_BOOK,
+  payload: { bookId },
 });
 
 export const updateBookDetails = (bookId, title, author, genre) => ({

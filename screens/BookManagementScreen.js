@@ -95,6 +95,15 @@ const BookManagementScreen = () => {
           style={styles.bookCover}
           resizeMode="cover"
         />
+        {item.available ? (
+          <View style={styles.tagContainer}>
+            <Text style={styles.tagText}>Available</Text>
+          </View>
+        ) : (
+          <View style={[styles.tagContainer, { backgroundColor: "#ff8080" }]}>
+            <Text style={styles.tagText}>Not Available</Text>
+          </View>
+        )}
         <View style={styles.bookInfoContainer}>
           <Text style={styles.bookTitle}>{item.title}</Text>
           <Text style={styles.bookAuthor}>by {item.author}</Text>
@@ -215,6 +224,12 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#f0f0f0",
   },
+  bookCover: {
+    width: "100%",
+    aspectRatio: 2 / 3,
+    borderTopLeftRadius: 10,
+    borderTopRightRadius: 10,
+  },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -234,14 +249,22 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginBottom: 10,
+    paddingHorizontal: 10,
   },
   sortContainer: {
     flex: 1,
     marginRight: 5,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 1,
   },
   filterContainer: {
     flex: 1,
     marginLeft: 5,
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
   },
   bookList: {
     paddingBottom: 80,
@@ -271,6 +294,22 @@ const styles = StyleSheet.create({
   bookAuthor: {
     fontSize: 14,
     color: "#666",
+  },
+  tagContainer: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: "#32a244",
+    textAlign: "center",
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 5,
+  },
+  tagText: {
+    flex: 1,
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 12,
   },
   emptyStateContainer: {
     flex: 1,

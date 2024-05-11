@@ -60,6 +60,24 @@ const booksReducer = (state = initialState, action) => {
         ...state,
         books: [...state.books, action.payload],
       };
+    case actionTypes.BORROW_BOOK:
+      return {
+        ...state,
+        books: state.books.map((book) =>
+          book.id === action.payload.bookId
+            ? { ...book, available: false }
+            : book
+        ),
+      };
+    case actionTypes.RETURN_BOOK:
+      return {
+        ...state,
+        books: state.books.map((book) =>
+          book.id === action.payload.bookId
+            ? { ...book, available: true }
+            : book
+        ),
+      };
     case actionTypes.SET_EDITING_BOOK_ID:
       return {
         ...state,

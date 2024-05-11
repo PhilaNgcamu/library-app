@@ -13,18 +13,10 @@ const StackNavigator = () => {
   return (
     <Stack.Navigator>
       <Stack.Screen
-        name="MBC Library"
+        name="Home"
         component={BookManagementScreen}
         options={{
-          headerStyle: {
-            backgroundColor: "#32a244",
-            shadowColor: "transparent",
-          },
-          headerTintColor: "#fff",
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-          animation: "slide_from_right",
+          headerShown: false,
         }}
       />
 
@@ -45,16 +37,17 @@ const TabNavigator = () => {
         tabBarStyle: {
           backgroundColor: "#fff",
           borderTopColor: "#32a244",
-          borderTopWidth: 1,
+          borderTopWidth: 0.5,
           height: 60,
           paddingBottom: 10,
           paddingTop: 10,
         },
+        tabBarHideOnKeyboard: true,
       }}
     >
       <Tab.Screen
         name="MBC Library"
-        component={BookManagementScreen}
+        component={StackNavigator}
         options={{
           headerStyle: {
             backgroundColor: "#32a244",

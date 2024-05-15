@@ -8,9 +8,11 @@ import {
   TouchableOpacity,
   Modal,
   Dimensions,
+  TextInput,
 } from "react-native";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 import { useDispatch, useSelector } from "react-redux";
+import { Snackbar } from "react-native-paper";
 
 const ViewBookScreen = ({ navigation, route }) => {
   const { bookId } = route.params;
@@ -18,22 +20,41 @@ const ViewBookScreen = ({ navigation, route }) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [available, setAvailable] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
+  const [memberName, setMemberName] = useState("");
+  const [memberSurname, setMemberSurname] = useState("");
   const book = useSelector((state) =>
     state.books.books.find((book) => book.id === bookId)
   );
   const dispatch = useDispatch();
 
+  const handleMemberNameChange = (name) => {
+    setMemberName(name);
+  };
+
+  const handleMemberSurnameChange = (surname) => {
+    setMemberSurname(surname);
+  };
+
   const handleBorrow = () => {
     setIsBorrowing(true);
-    setTimeout(() => {
-      setIsModalVisible(true);
-      setIsBorrowing(false);
-      setAvailable(false);
-    }, 1500);
+    setIsModalVisible(true);
   };
 
   const closeModal = () => {
     setIsModalVisible(false);
+    setIsBorrowing(false);
+  };
+
+  const handleSubmitForm = () => {
+    dispatch({
+      type: "ADD_MEMBER_DETAILS",
+      payload: {
+        bookId: bookId,
+        memberName: memberName,
+        memberSurname: memberSurname,
+      },
+    });
+    closeModal();
   };
 
   return (
@@ -110,16 +131,74 @@ const ViewBookScreen = ({ navigation, route }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Success</Text>
+            <Text style={styles.modalTitle}>Borrow Book</Text>
             <Text style={styles.modalMessage}>
-              You have borrowed {book.title}
+              Enter Member Details to Borrow:
             </Text>
-            <TouchableOpacity onPress={closeModal} style={styles.modalButton}>
-              <Text style={styles.modalButtonText}>OK</Text>
-            </TouchableOpacity>
+            <View style={styles.inputContainer}>
+              <View>
+                <Text style={styles.inputLabel}>Member's Name:</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter Member's Name"
+                  value={memberName}
+                  onChangeText={handleMemberNameChange}
+                />
+              </View>
+              <View>
+                <Text style={styles.inputLabel}>Member's Surname:</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter Member's Surname"
+                  value={memberSurname}
+                  onChangeText={handleMemberSurnameChange}
+                />
+              </View>
+            </View>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity
+                onPress={handleSubmitForm}
+                style={styles.modalButton}
+              >
+                <Text style={styles.modalButtonText}>Confirm</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={closeModal}
+                style={{
+                  padding: 10,
+                  borderRadius: 5,
+                  width: "40%",
+                  borderWidth: 1,
+
+                  borderColor: "#32a244",
+                }}
+              >
+                <Text
+                  style={{
+                    color: "#32a244",
+                    textAlign: "center",
+                  }}
+                >
+                  Cancel
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
         </View>
       </Modal>
+      <Snackbar
+        visible={isBorrowing && !isModalVisible}
+        style={{ backgroundColor: "#32a244" }}
+        icon="check-circle"
+        onDismiss={() => setIsBorrowing(false)}
+        duration={2000}
+        action={{
+          textColor: "white",
+          onPress: () => setSnackbarVisible(false),
+        }}
+      >
+        Book borrowed successfully!
+      </Snackbar>
     </ScrollView>
   );
 };
@@ -200,15 +279,45 @@ const styles = StyleSheet.create({
     marginBottom: 20,
     textAlign: "center",
   },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-around",
+    marginRight: 18,
+    width: "100%",
+  },
   modalButton: {
     backgroundColor: "#32a244",
     padding: 10,
     borderRadius: 5,
+    width: "40%",
   },
   modalButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+    textAlign: "center",
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#ccc",
+    borderRadius: 5,
+    padding: 10,
+    marginBottom: 10,
+    marginRight: 130,
+    width: "100%",
+    backgroundColor: "#f9f9f9",
+    fontSize: 16,
+    color: "#333",
+  },
+  inputContainer: {
+    flexDirection: "column",
+    width: "100%",
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: "#555",
   },
 });
 

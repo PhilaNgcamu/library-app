@@ -317,7 +317,7 @@ const styles = StyleSheet.create({
   inputLabel: {
     fontSize: 16,
     marginBottom: 5,
-    color: "#555",
+    color: "#",
   },
 });
 

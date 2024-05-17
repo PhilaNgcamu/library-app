@@ -6,7 +6,7 @@ import { useFocusEffect } from "@react-navigation/native";
 import { searchBook } from "../redux/actions";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 
-const QRCodeScannerScreen = ({}) => {
+const QRCodeScannerScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
   const dispatch = useDispatch();

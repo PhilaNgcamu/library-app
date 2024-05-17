@@ -42,7 +42,7 @@ const BookManagementScreen = () => {
   }, []);
 
   const handleViewDetails = (bookId) => {
-    navigation.navigate("View Book", { bookId });
+    navigation.navigate("Book Details", { bookId });
   };
 
   const handleSort = (sortBy) => {

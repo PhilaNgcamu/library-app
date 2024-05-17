@@ -26,6 +26,7 @@ const ViewBookScreen = ({ navigation, route }) => {
     state.books.books.find((book) => book.id === bookId)
   );
   const [borrowedBook, setBorrowedBook] = useState(null);
+  const [borrowedBooks, setBorrowedBooks] = useState([]);
   const dispatch = useDispatch();
 
   const handleMemberNameChange = (name) => {
@@ -47,15 +48,12 @@ const ViewBookScreen = ({ navigation, route }) => {
   };
 
   const handleSubmitForm = () => {
-    dispatch({
-      type: "ADD_MEMBER_DETAILS",
-      payload: {
-        bookId: bookId,
-        memberName: memberName,
-        memberSurname: memberSurname,
-      },
-    });
-    setBorrowedBook(book);
+    const borrowedBookDetails = {
+      memberName: memberName,
+      memberSurname: memberSurname,
+      book: book,
+    };
+    setBorrowedBooks([...borrowedBooks, borrowedBookDetails]);
     closeModal();
   };
 
@@ -201,14 +199,17 @@ const ViewBookScreen = ({ navigation, route }) => {
       >
         Book borrowed successfully!
       </Snackbar>
-      {borrowedBook && (
+      {borrowedBooks.length > 0 && (
         <View style={styles.borrowedInfoContainer}>
-          <Text style={styles.borrowedInfoText}>
-            Member: {memberName} {memberSurname}
-          </Text>
-          <Text style={styles.borrowedInfoText}>
-            Borrowed Book: {borrowedBook.title}
-          </Text>
+          <Text style={styles.borrowedInfoTitle}>Current Users</Text>
+          {borrowedBooks.map((borrowedBook, index) => (
+            <View key={index} style={styles.borrowedInfoItem}>
+              <Text style={styles.borrowedInfoLabel}>Member Name:</Text>
+              <Text style={styles.borrowedInfoText}>
+                {borrowedBook.memberName} {borrowedBook.memberSurname}
+              </Text>
+            </View>
+          ))}
         </View>
       )}
     </ScrollView>
@@ -336,10 +337,39 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 20,
     marginTop: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  borrowedInfoTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 15,
+    color: "#333",
+  },
+  borrowedInfoItem: {
+    marginBottom: 15,
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    backgroundColor: "#f9f9f9",
+    borderRadius: 10,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
+  borrowedInfoLabel: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#555",
   },
   borrowedInfoText: {
     fontSize: 16,
-    marginBottom: 10,
+    color: "#333",
   },
 });
 

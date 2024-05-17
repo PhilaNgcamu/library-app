@@ -169,7 +169,7 @@ const ViewBookScreen = ({ navigation, route }) => {
                   borderRadius: 5,
                   width: "40%",
                   borderWidth: 1,
-
+                  marginLeft: 65,
                   borderColor: "#32a244",
                 }}
               >
@@ -283,7 +283,6 @@ const styles = StyleSheet.create({
   modalButtonContainer: {
     flexDirection: "row",
     justifyContent: "space-around",
-    marginRight: 18,
     width: "100%",
   },
   modalButton: {

@@ -25,6 +25,7 @@ const ViewBookScreen = ({ navigation, route }) => {
   const book = useSelector((state) =>
     state.books.books.find((book) => book.id === bookId)
   );
+  const [borrowedBook, setBorrowedBook] = useState(null);
   const dispatch = useDispatch();
 
   const handleMemberNameChange = (name) => {
@@ -54,6 +55,7 @@ const ViewBookScreen = ({ navigation, route }) => {
         memberSurname: memberSurname,
       },
     });
+    setBorrowedBook(book);
     closeModal();
   };
 
@@ -199,6 +201,16 @@ const ViewBookScreen = ({ navigation, route }) => {
       >
         Book borrowed successfully!
       </Snackbar>
+      {borrowedBook && (
+        <View style={styles.borrowedInfoContainer}>
+          <Text style={styles.borrowedInfoText}>
+            Member: {memberName} {memberSurname}
+          </Text>
+          <Text style={styles.borrowedInfoText}>
+            Borrowed Book: {borrowedBook.title}
+          </Text>
+        </View>
+      )}
     </ScrollView>
   );
 };
@@ -318,6 +330,16 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
     color: "#555",
+  },
+  borrowedInfoContainer: {
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    marginTop: 20,
+  },
+  borrowedInfoText: {
+    fontSize: 16,
+    marginBottom: 10,
   },
 });
 

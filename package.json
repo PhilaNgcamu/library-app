@@ -12,6 +12,7 @@
     "@gluestack-style/react": "^1.0.52",
     "@gluestack-ui/config": "^1.1.18",
     "@gluestack-ui/themed": "^1.1.21",
+    "@react-native-community/datetimepicker": "^8.0.1",
     "@react-native-masked-view/masked-view": "0.3.0",
     "@react-native-picker/picker": "^2.7.5",
     "@react-navigation/bottom-tabs": "^6.5.20",

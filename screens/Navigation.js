@@ -6,6 +6,7 @@ import BookManagementScreen from "./BookManagementScreen";
 import QRCodeScannerScreen from "./BarcodeScannerScreen";
 import ViewBookScreen from "./ViewBookScreen";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import BorrowingDetailsScreen from "./BorrowingDetailsScreen";
 
 const Stack = createStackNavigator();
 
@@ -22,6 +23,10 @@ const StackNavigator = () => {
 
       <Stack.Screen name="Book Details" component={ViewBookScreen} />
       <Stack.Screen name="Scan QR Code" component={QRCodeScannerScreen} />
+      <Stack.Screen
+        name="BorrowingDetails"
+        component={BorrowingDetailsScreen}
+      />
     </Stack.Navigator>
   );
 };

@@ -13,6 +13,7 @@ import {
 import { Button, ButtonText } from "@gluestack-ui/themed";
 import { useDispatch, useSelector } from "react-redux";
 import { Snackbar } from "react-native-paper";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const ViewBookScreen = ({ navigation, route }) => {
   const { bookId } = route.params;
@@ -25,7 +26,9 @@ const ViewBookScreen = ({ navigation, route }) => {
   const book = useSelector((state) =>
     state.books.books.find((book) => book.id === bookId)
   );
-  const [borrowedBook, setBorrowedBook] = useState(null);
+  const [borrowedDate, setBorrowedDate] = useState(new Date(1598051730000));
+  const [returnDate, setReturnDate] = useState(new Date(1598051730000));
+
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const dispatch = useDispatch();
 
@@ -55,6 +58,34 @@ const ViewBookScreen = ({ navigation, route }) => {
     };
     setBorrowedBooks([...borrowedBooks, borrowedBookDetails]);
     closeModal();
+  };
+
+  const handleBorrowedDate = (event, selectedDate) => {
+    const currentDate = selectedDate;
+    setBorrowedDate(currentDate);
+  };
+
+  const handleReturnDate = () => {
+    const date = new Date();
+    const returnDate = date.toLocaleDateString();
+    setReturnDate(returnDate);
+  };
+
+  const showMode = (currentMode) => {
+    DateTimePickerAndroid.open({
+      value: date,
+      onChange,
+      mode: currentMode,
+      is24Hour: true,
+    });
+  };
+
+  const showDatepicker = () => {
+    showMode("date");
+  };
+
+  const navigateToBorrowingDetails = (borrowedBook) => {
+    navigation.navigate("BorrowingDetails", borrowedBook);
   };
 
   return (
@@ -154,7 +185,25 @@ const ViewBookScreen = ({ navigation, route }) => {
                   onChangeText={handleMemberSurnameChange}
                 />
               </View>
+              <View>
+                <Text style={styles.inputLabel}>Borrowed Date:</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter Date"
+                  value={borrowedDate}
+                  onPress={handleBorrowedDate}
+                />
+              </View>
+              <View>
+                <Text style={styles.inputLabel}>Return Date:</Text>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Enter Date"
+                  onChangeText={handleReturnDate}
+                />
+              </View>
             </View>
+
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
                 onPress={handleSubmitForm}
@@ -203,12 +252,17 @@ const ViewBookScreen = ({ navigation, route }) => {
         <View style={styles.borrowedInfoContainer}>
           <Text style={styles.borrowedInfoTitle}>Current Users</Text>
           {borrowedBooks.map((borrowedBook, index) => (
-            <View key={index} style={styles.borrowedInfoItem}>
-              <Text style={styles.borrowedInfoLabel}>Member Name:</Text>
-              <Text style={styles.borrowedInfoText}>
-                {borrowedBook.memberName} {borrowedBook.memberSurname}
-              </Text>
-            </View>
+            <TouchableOpacity
+              key={index}
+              onPress={() => navigateToBorrowingDetails(borrowedBook)}
+            >
+              <View style={styles.borrowedInfoItem}>
+                <Text style={styles.borrowedInfoLabel}>Member Name:</Text>
+                <Text style={styles.borrowedInfoText}>
+                  {borrowedBook.memberName} {borrowedBook.memberSurname}
+                </Text>
+              </View>
+            </TouchableOpacity>
           ))}
         </View>
       )}

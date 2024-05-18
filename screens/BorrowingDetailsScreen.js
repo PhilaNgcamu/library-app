@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Progress, ProgressFilledTrack } from "@gluestack-ui/themed";
-import { AntDesign } from "@expo/vector-icons";
+import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 
 const BookOption = ({ title, author, borrowedDate, returnDate, onPress }) => {
   const borrowedDateObj = new Date(borrowedDate);
@@ -69,6 +69,27 @@ const BorrowingDetailsScreen = ({ route, navigation }) => {
           <Text style={styles.value}>
             {memberName} {memberSurname}
           </Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text style={styles.label}>Current Book:</Text>
+          <TouchableOpacity
+            style={styles.value}
+            onPress={() =>
+              navigation.navigate("Book Details", {
+                bookId: "bookIdHere",
+              })
+            }
+          >
+            <Text style={styles.value} nav>
+              hh
+            </Text>
+            <MaterialIcons
+              name="navigate-next"
+              size={18}
+              style={styles.icon}
+              color="black"
+            />
+          </TouchableOpacity>
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.label}>Borrowed Date:</Text>
@@ -167,6 +188,10 @@ const styles = StyleSheet.create({
   progressValue: {
     marginTop: 5,
     fontSize: 14,
+  },
+  icon: {
+    position: "absolute",
+    left: "90%",
   },
 });
 

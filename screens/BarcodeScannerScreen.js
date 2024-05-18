@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { Text, View, StyleSheet } from "react-native";
+import { Text, View, StyleSheet, ActivityIndicator } from "react-native";
 import { Camera } from "expo-camera";
 import { useDispatch } from "react-redux";
 import { useFocusEffect } from "@react-navigation/native";
@@ -38,7 +38,16 @@ const QRCodeScannerScreen = () => {
   };
 
   if (hasPermission === null) {
-    return <Text>Requesting for camera permission</Text>;
+    return (
+      <ActivityIndicator
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          color: "#32a244",
+        }}
+      />
+    );
   }
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;

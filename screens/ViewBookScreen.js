@@ -31,7 +31,11 @@ const ViewBookScreen = ({ navigation, route }) => {
   const [returnDate, setReturnDate] = useState(new Date(1598051730000));
 
   const [borrowedBooks, setBorrowedBooks] = useState([]);
-  const dispatch = useDispatch();
+  const [showMoreUsers, setShowMoreUsers] = useState(false);
+
+  const handleSeeMoreUsers = () => {
+    setShowMoreUsers(true);
+  };
 
   const handleMemberNameChange = (name) => {
     setMemberName(name);
@@ -255,19 +259,26 @@ const ViewBookScreen = ({ navigation, route }) => {
       {borrowedBooks.length > 0 && (
         <View style={styles.borrowedInfoContainer}>
           <Text style={styles.borrowedInfoTitle}>Current Users</Text>
-          {borrowedBooks.map((borrowedBook, index) => (
-            <TouchableOpacity
-              key={index}
-              onPress={() => navigateToBorrowingDetails(borrowedBook)}
-            >
-              <View style={styles.borrowedInfoItem}>
-                <Text style={styles.borrowedInfoLabel}>Member Name:</Text>
-                <Text style={styles.borrowedInfoText}>
-                  {borrowedBook.memberName} {borrowedBook.memberSurname}
-                </Text>
-              </View>
+          {borrowedBooks
+            .slice(0, showMoreUsers ? borrowedBooks.length : 3)
+            .map((borrowedBook, index) => (
+              <TouchableOpacity
+                key={index}
+                onPress={() => navigateToBorrowingDetails(borrowedBook)}
+              >
+                <View style={styles.borrowedInfoItem}>
+                  <Text style={styles.borrowedInfoLabel}>Member Name:</Text>
+                  <Text style={styles.borrowedInfoText}>
+                    {borrowedBook.memberName} {borrowedBook.memberSurname}
+                  </Text>
+                </View>
+              </TouchableOpacity>
+            ))}
+          {!showMoreUsers && borrowedBooks.length > 3 && (
+            <TouchableOpacity onPress={handleSeeMoreUsers}>
+              <Text style={styles.seeMoreButton}>See more</Text>
             </TouchableOpacity>
-          ))}
+          )}
         </View>
       )}
     </ScrollView>

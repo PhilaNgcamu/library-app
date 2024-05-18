@@ -1,11 +1,15 @@
 import React from "react";
-import { View, Text, StyleSheet, ScrollView } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+} from "react-native";
 import { Progress, ProgressFilledTrack } from "@gluestack-ui/themed";
 import { AntDesign } from "@expo/vector-icons";
 
-const BorrowingDetailsScreen = ({ route }) => {
-  const { memberName, memberSurname, borrowedDate, returnDate } = route.params;
-
+const BookOption = ({ title, author, borrowedDate, returnDate, onPress }) => {
   const borrowedDateObj = new Date(borrowedDate);
   const returnDateObj = new Date(returnDate);
   const borrowedDuration = Math.ceil(
@@ -21,6 +25,38 @@ const BorrowingDetailsScreen = ({ route }) => {
   const totalDurationDays = 2 * 30;
   const progressPercentage =
     ((totalDurationDays - remainingDays) / totalDurationDays) * 100;
+
+  return (
+    <TouchableOpacity onPress={onPress} style={styles.bookOption}>
+      <View style={styles.bookInfo}>
+        <Text style={styles.bookTitle}>{title}</Text>
+        <Text style={styles.bookAuthor}>{author}</Text>
+      </View>
+      <View style={styles.bookProgress}>
+        <Progress
+          value={progressPercentage}
+          w={150}
+          size="sm"
+          colorScheme="green"
+        >
+          <ProgressFilledTrack />
+        </Progress>
+        <Text style={styles.progressValue}>
+          {remainingMonths} months {remainingDays % 30} days
+        </Text>
+      </View>
+    </TouchableOpacity>
+  );
+};
+
+const BorrowingDetailsScreen = ({ route, navigation }) => {
+  const { memberName, memberSurname, borrowedDate, returnDate } = route.params;
+
+  const options = [
+    { title: "Book Title 1", author: "Author 1", borrowedDate, returnDate },
+    { title: "Book Title 2", author: "Author 2", borrowedDate, returnDate },
+    { title: "Book Title 3", author: "Author 3", borrowedDate, returnDate },
+  ];
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -44,24 +80,23 @@ const BorrowingDetailsScreen = ({ route }) => {
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.label}>Borrowed Duration:</Text>
-          <Text style={styles.value}>{borrowedDuration} days</Text>
+          <Text style={styles.value}>days</Text>
         </View>
       </View>
 
-      <View style={styles.progressContainer}>
-        <Text style={styles.progressLabel}>Return in:</Text>
-        <Progress
-          value={progressPercentage}
-          w={300}
-          size="sm"
-          colorScheme="green"
-        >
-          <ProgressFilledTrack />
-        </Progress>
-        <Text style={styles.progressValue}>
-          {remainingMonths} months {remainingDays % 30} days
-        </Text>
-      </View>
+      <Text style={styles.optionsTitle}>Other Books</Text>
+      {options.map((option, index) => (
+        <BookOption
+          key={index}
+          title={option.title}
+          author={option.author}
+          borrowedDate={option.borrowedDate}
+          returnDate={option.returnDate}
+          onPress={() =>
+            navigation.navigate("BorrowingDetailsScreen", { ...option })
+          }
+        />
+      ))}
     </ScrollView>
   );
 };
@@ -102,17 +137,34 @@ const styles = StyleSheet.create({
     fontSize: 16,
     width: "60%",
   },
-  progressContainer: {
-    alignItems: "center",
-  },
-  progressLabel: {
-    fontSize: 18,
+  optionsTitle: {
+    fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
   },
-  progressValue: {
-    marginTop: 10,
+  bookOption: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 20,
+    backgroundColor: "#f0f0f0",
+    padding: 15,
+    borderRadius: 10,
+  },
+  bookInfo: {},
+  bookTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  bookAuthor: {
     fontSize: 16,
+  },
+  bookProgress: {
+    alignItems: "flex-end",
+  },
+  progressValue: {
+    marginTop: 5,
+    fontSize: 14,
   },
 });
 

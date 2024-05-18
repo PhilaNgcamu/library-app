@@ -91,7 +91,7 @@ const ViewBookScreen = ({ navigation, route }) => {
   };
 
   const navigateToBorrowingDetails = (borrowedBook) => {
-    navigation.navigate("BorrowingDetails", borrowedBook);
+    navigation.navigate("Borrowing Details", borrowedBook);
   };
 
   return (

@@ -1,19 +1,32 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
+import { Progress, ProgressFilledTrack } from "@gluestack-ui/themed";
+import { AntDesign } from "@expo/vector-icons";
 
 const BorrowingDetailsScreen = ({ route }) => {
   const { memberName, memberSurname, borrowedDate, returnDate } = route.params;
 
-  // Calculate the duration of borrowing in days
   const borrowedDateObj = new Date(borrowedDate);
   const returnDateObj = new Date(returnDate);
   const borrowedDuration = Math.ceil(
     (returnDateObj - borrowedDateObj) / (1000 * 3600 * 24)
   );
 
+  const returnDateMs = returnDateObj.getTime();
+  const currentDateMs = new Date().getTime();
+  const remainingTimeMs = returnDateMs - currentDateMs;
+  const remainingDays = Math.ceil(remainingTimeMs / (1000 * 3600 * 24));
+  const remainingMonths = Math.floor(remainingDays / 30);
+
+  const totalDurationDays = 2 * 30;
+  const progressPercentage =
+    ((totalDurationDays - remainingDays) / totalDurationDays) * 100;
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Borrowing Details</Text>
+    <ScrollView contentContainerStyle={styles.container}>
+      <View style={styles.profileContainer}>
+        <AntDesign name="user" size={100} color="black" />
+      </View>
       <View style={styles.infoContainer}>
         <View style={styles.infoItem}>
           <Text style={styles.label}>Member Name:</Text>
@@ -34,30 +47,42 @@ const BorrowingDetailsScreen = ({ route }) => {
           <Text style={styles.value}>{borrowedDuration} days</Text>
         </View>
       </View>
-    </View>
+
+      <View style={styles.progressContainer}>
+        <Text style={styles.progressLabel}>Return in:</Text>
+        <Progress
+          value={progressPercentage}
+          w={300}
+          size="sm"
+          colorScheme="green"
+        >
+          <ProgressFilledTrack />
+        </Progress>
+        <Text style={styles.progressValue}>
+          {remainingMonths} months {remainingDays % 30} days
+        </Text>
+      </View>
+    </ScrollView>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "#fff",
+    flexGrow: 1,
+    paddingVertical: 30,
     paddingHorizontal: 20,
+    backgroundColor: "#fff",
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
+  profileContainer: {
+    marginBottom: 30,
+    alignItems: "center",
   },
   infoContainer: {
-    width: "100%",
+    marginBottom: 30,
   },
   infoItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: 15,
   },
   label: {
@@ -68,6 +93,18 @@ const styles = StyleSheet.create({
   value: {
     fontSize: 16,
     width: "60%",
+  },
+  progressContainer: {
+    alignItems: "center",
+  },
+  progressLabel: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  progressValue: {
+    marginTop: 10,
+    fontSize: 16,
   },
 });
 

@@ -19,6 +19,7 @@ const ViewBookScreen = ({ navigation, route }) => {
   const { bookId } = route.params;
   const [isBorrowing, setIsBorrowing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [available, setAvailable] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [memberName, setMemberName] = useState("");
@@ -42,6 +43,7 @@ const ViewBookScreen = ({ navigation, route }) => {
 
   const handleBorrow = () => {
     setIsBorrowing(true);
+    setSnackbarVisible(true);
     setIsModalVisible(true);
   };
 
@@ -236,14 +238,16 @@ const ViewBookScreen = ({ navigation, route }) => {
         </View>
       </Modal>
       <Snackbar
-        visible={isBorrowing && !isModalVisible}
-        style={{ backgroundColor: "#32a244" }}
+        visible={snackbarVisible && !isModalVisible}
+        style={{ backgroundColor: "#32a244", zIndex: 1000 }}
         icon="check-circle"
-        onDismiss={() => setIsBorrowing(false)}
+        onDismiss={() => {
+          setIsBorrowing(false);
+          setSnackbarVisible(false);
+        }}
         duration={2000}
         action={{
           textColor: "white",
-          onPress: () => setSnackbarVisible(false),
         }}
       >
         Book borrowed successfully!

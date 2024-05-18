@@ -40,11 +40,12 @@ const QRCodeScannerScreen = () => {
   if (hasPermission === null) {
     return (
       <ActivityIndicator
+        size="large"
+        color="#32a244"
         style={{
           flex: 1,
           justifyContent: "center",
           alignItems: "center",
-          color: "#32a244",
         }}
       />
     );

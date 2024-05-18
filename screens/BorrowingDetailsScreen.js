@@ -82,9 +82,12 @@ const BorrowingDetailsScreen = ({ route, navigation }) => {
           <Text style={styles.label}>Borrowed Duration:</Text>
           <Text style={styles.value}>days</Text>
         </View>
+        <Progress value={50} w={200} size="sm">
+          <ProgressFilledTrack />
+        </Progress>
       </View>
 
-      <Text style={styles.optionsTitle}>Other Books</Text>
+      <Text style={styles.optionsTitle}>Other Current Reads</Text>
       {options.map((option, index) => (
         <BookOption
           key={index}
@@ -93,7 +96,7 @@ const BorrowingDetailsScreen = ({ route, navigation }) => {
           borrowedDate={option.borrowedDate}
           returnDate={option.returnDate}
           onPress={() =>
-            navigation.navigate("BorrowingDetailsScreen", { ...option })
+            navigation.navigate("Borrowing Details", { ...option })
           }
         />
       ))}
@@ -104,7 +107,6 @@ const BorrowingDetailsScreen = ({ route, navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingVertical: 30,
     paddingHorizontal: 20,
     backgroundColor: "#fff",
   },

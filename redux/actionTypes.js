@@ -10,6 +10,8 @@ const actionTypes = {
   SET_TITLE: "SET_TITLE",
   SET_AUTHOR: "SET_AUTHOR",
   SET_GENRE: "SET_GENRE",
+  DELETE_BOOK: "DELETE_BOOK",
+  INCREASE_BOOK_COUNT: "INCREASE_BOOK_COUNT",
 };
 
 export default actionTypes;

@@ -1,7 +1,7 @@
 import actionTypes from "./actionTypes";
 
 export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
-  return async (dispatch) => {
+  return async (dispatch, getState) => {
     try {
       const endpoint = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&startIndex=${startIndex}&maxResults=${maxResults}`;
       console.log(endpoint);
@@ -24,19 +24,29 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
 
         const coverUrl = imageLinks ? imageLinks.thumbnail : null;
 
-        dispatch(
-          addBook(
-            isbn,
-            title,
-            authors[0],
-            categories[0],
-            coverUrl,
-            description,
-            pageCount || "N/A",
-            publishedDate,
-            language
-          )
+        const book = {
+          id: isbn,
+          title,
+          author: authors ? authors[0] : "Unknown",
+          genre: categories ? categories[0] : "Unknown",
+          coverUrl,
+          description,
+          pageCount: pageCount || "N/A",
+          publishedDate,
+          language,
+          available: true,
+          count: 1,
+        };
+
+        const existingBook = getState().books.books.find(
+          (b) => b.id === isbn || (b.title === title && b.author === authors[0])
         );
+
+        if (existingBook) {
+          dispatch(increaseBookCount(isbn));
+        } else {
+          dispatch(addBook(book));
+        }
       } else {
         console.log("Book not found");
       }
@@ -46,30 +56,19 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
   };
 };
 
-export const addBook = (
-  id,
-  title,
-  author,
-  genre,
-  coverUrl,
-  description,
-  pageCount,
-  publishedDate,
-  language
-) => ({
+export const addBook = (book) => ({
   type: actionTypes.ADD_BOOK,
-  payload: {
-    id,
-    title,
-    author,
-    genre,
-    coverUrl,
-    description,
-    pageCount,
-    publishedDate,
-    language,
-    available: true,
-  },
+  payload: book,
+});
+
+export const increaseBookCount = (id) => ({
+  type: actionTypes.INCREASE_BOOK_COUNT,
+  payload: { id },
+});
+
+export const deleteBook = (id) => ({
+  type: actionTypes.DELETE_BOOK,
+  payload: { id },
 });
 
 export const setEditingBookId = (id) => ({
@@ -90,11 +89,6 @@ export const returnBook = (bookId) => ({
 export const updateBookDetails = (bookId, title, author, genre) => ({
   type: actionTypes.UPDATE_BOOK_DETAILS,
   payload: { bookId, title, author, genre },
-});
-
-export const deleteBook = (id) => ({
-  type: actionTypes.DELETE_BOOK,
-  payload: { id },
 });
 
 export const getAllBooks = () => ({

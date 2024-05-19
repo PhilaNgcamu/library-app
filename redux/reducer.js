@@ -27,38 +27,18 @@ const booksReducer = (state = initialState, action) => {
         genre: action.payload.genre,
       };
     case actionTypes.ADD_BOOK:
-      if (Array.isArray(action.payload)) {
-        const booksToAdd = action.payload.map((book) => ({
-          id: book.id,
-          title: book.volumeInfo.title,
-          author: book.volumeInfo.authors
-            ? book.volumeInfo.authors.join(", ")
-            : "Unknown",
-          genre: book.volumeInfo.categories
-            ? book.volumeInfo.categories.join(", ")
-            : "Unknown",
-          description: book.volumeInfo.description
-            ? book.volumeInfo.description
-            : "No description available",
-          pageCount: book.volumeInfo.pageCount ? book.volumeInfo.pageCount : 0,
-          publishedDate: book.volumeInfo.publishedDate
-            ? book.volumeInfo.publishedDate
-            : "Unknown",
-          language: book.volumeInfo.language
-            ? book.volumeInfo.language
-            : "Unknown",
-          coverUrl: book.volumeInfo.imageLinks
-            ? book.volumeInfo.imageLinks.thumbnail
-            : null,
-        }));
-        return {
-          ...state,
-          books: [...state.books, ...booksToAdd],
-        };
-      }
       return {
         ...state,
         books: [...state.books, action.payload],
+      };
+    case actionTypes.INCREASE_BOOK_COUNT:
+      return {
+        ...state,
+        books: state.books.map((book) =>
+          book.id === action.payload.id
+            ? { ...book, count: book.count + 1 }
+            : book
+        ),
       };
     case actionTypes.BORROW_BOOK:
       return {
@@ -112,6 +92,7 @@ const booksReducer = (state = initialState, action) => {
         ...state,
         borrowings: action.payload,
       };
+
     default:
       return state;
   }

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   TextInput,
   Modal,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -16,6 +17,7 @@ import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
+import { addBook, deleteBook } from "../redux/actions";
 
 const BookManagementScreen = () => {
   const defaultSortBy = "title";
@@ -27,6 +29,9 @@ const BookManagementScreen = () => {
 
   const [showNoBooksModal, setShowNoBooksModal] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
+
+  const [dropdownVisible, setDropdownVisible] = useState(false);
+  const [selectedBook, setSelectedBook] = useState(null);
 
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.books);
@@ -42,6 +47,11 @@ const BookManagementScreen = () => {
 
   const handleViewDetails = (bookId) => {
     navigation.navigate("Book Details", { bookId });
+  };
+
+  const handleDeleteBook = (bookId) => {
+    dispatch(deleteBook(bookId));
+    setDropdownVisible(false);
   };
 
   const handleSort = (sortBy) => {
@@ -60,7 +70,7 @@ const BookManagementScreen = () => {
     setFilterBy(filterBy);
     const filtered = books.filter((book) => {
       if (filterBy === "availability") {
-        return book.title;
+        return book.available;
       }
     });
     setFilteredBooks(filtered);
@@ -82,11 +92,21 @@ const BookManagementScreen = () => {
     }
   };
 
+  const handleLongPress = (book) => {
+    setSelectedBook(book);
+    setDropdownVisible(true);
+  };
+
+  const handleAddBook = (newBook) => {
+    dispatch(addBook(newBook));
+  };
+
   const renderBookItem = ({ item }) => {
     return (
       <TouchableOpacity
         style={styles.bookItem}
         onPress={() => handleViewDetails(item.id)}
+        onLongPress={() => handleLongPress(item)}
         activeOpacity={1}
       >
         <Image
@@ -106,6 +126,7 @@ const BookManagementScreen = () => {
         <View style={styles.bookInfoContainer}>
           <Text style={styles.bookTitle}>{item.title}</Text>
           <Text style={styles.bookAuthor}>by {item.author}</Text>
+          <Text style={styles.bookCount}>Books left: {item.count}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -174,6 +195,42 @@ const BookManagementScreen = () => {
           contentContainerStyle={styles.bookList}
         />
       )}
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={dropdownVisible}
+        onRequestClose={() => setDropdownVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setDropdownVisible(false)}>
+          <View style={styles.modalOverlay}>
+            <View style={styles.dropdown}>
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => {
+                  handleViewDetails(selectedBook.id);
+                  setDropdownVisible(false);
+                }}
+              >
+                <Text style={styles.dropdownItemText}>View Details</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.dropdownItem}
+                onPress={() => {
+                  handleDeleteBook(selectedBook.id);
+                  setDropdownVisible(false);
+                }}
+              >
+                <Text style={(styles.dropdownItemText, { color: "red" })}>
+                  Delete
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
       <Modal
         animationType="slide"
         transparent={true}
@@ -201,6 +258,7 @@ const BookManagementScreen = () => {
           </View>
         </View>
       </Modal>
+
       <Snackbar
         visible={snackbarVisible}
         style={{ backgroundColor: "#32a244" }}
@@ -247,9 +305,7 @@ const styles = StyleSheet.create({
   sortFilterContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     marginBottom: 10,
-    marginTop: 10,
     paddingHorizontal: 10,
   },
   sortContainer: {
@@ -258,6 +314,7 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
+    padding: 1,
   },
   filterContainer: {
     flex: 1,
@@ -267,49 +324,49 @@ const styles = StyleSheet.create({
     borderRadius: 5,
   },
   bookList: {
-    paddingBottom: 80,
+    paddingBottom: 20,
   },
   bookItem: {
     flex: 1,
+    backgroundColor: "white",
     margin: 10,
-    backgroundColor: "#fff",
     borderRadius: 10,
-    elevation: 3,
     overflow: "hidden",
-  },
-  bookCover: {
-    width: "100%",
-    aspectRatio: 2 / 3,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
-  bookInfoContainer: {
-    padding: 10,
-  },
-  bookTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
-  },
-  bookAuthor: {
-    fontSize: 14,
-    color: "#666",
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
   },
   tagContainer: {
     position: "absolute",
     top: 10,
     right: 10,
     backgroundColor: "#32a244",
-    textAlign: "center",
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 5,
+    paddingVertical: 2,
     borderRadius: 5,
   },
   tagText: {
-    flex: 1,
-    color: "#fff",
-    fontWeight: "bold",
+    color: "white",
     fontSize: 12,
+  },
+  bookInfoContainer: {
+    padding: 10,
+  },
+  bookTitle: {
+    fontWeight: "bold",
+    fontSize: 16,
+    marginBottom: 5,
+  },
+  bookAuthor: {
+    color: "#666",
+    marginBottom: 5,
+  },
+  bookCount: {
+    color: "#666",
+    fontSize: 14,
+    fontWeight: "bold",
   },
   emptyStateContainer: {
     flex: 1,
@@ -318,30 +375,50 @@ const styles = StyleSheet.create({
   },
   emptyStateText: {
     fontSize: 18,
-    marginBottom: 20,
+    color: "#666",
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dropdown: {
+    width: 200,
+    backgroundColor: "white",
+    borderRadius: 5,
+    padding: 10,
+    shadowColor: "#000",
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 2,
+  },
+  dropdownItem: {
+    padding: 10,
+  },
+  dropdownItemText: {
+    fontSize: 16,
   },
   modalContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
   modalContent: {
     backgroundColor: "white",
-    padding: 30,
+    padding: 20,
     borderRadius: 10,
     alignItems: "center",
-    elevation: 5,
   },
   modalText: {
-    fontSize: 18,
+    fontSize: 16,
     marginBottom: 20,
-    textAlign: "center",
   },
   modalButton: {
     backgroundColor: "#32a244",
-    paddingHorizontal: 15,
-    paddingVertical: 10,
+    padding: 10,
     borderRadius: 5,
   },
 });

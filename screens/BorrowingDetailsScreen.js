@@ -12,19 +12,19 @@ import { AntDesign, MaterialIcons } from "@expo/vector-icons";
 const BookOption = ({ title, author, borrowedDate, returnDate, onPress }) => {
   const borrowedDateObj = new Date(borrowedDate);
   const returnDateObj = new Date(returnDate);
+  const currentDateObj = new Date();
+
   const borrowedDuration = Math.ceil(
     (returnDateObj - borrowedDateObj) / (1000 * 3600 * 24)
   );
 
-  const returnDateMs = returnDateObj.getTime();
-  const currentDateMs = new Date().getTime();
-  const remainingTimeMs = returnDateMs - currentDateMs;
+  const remainingTimeMs = returnDateObj - currentDateObj;
   const remainingDays = Math.ceil(remainingTimeMs / (1000 * 3600 * 24));
   const remainingMonths = Math.floor(remainingDays / 30);
 
-  const totalDurationDays = 2 * 30;
+  const totalDurationDays = borrowedDuration; // The total duration in days
   const progressPercentage =
-    ((totalDurationDays - remainingDays) / totalDurationDays) * 100;
+    ((borrowedDuration - remainingDays) / totalDurationDays) * 100;
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.bookOption}>
@@ -50,12 +50,28 @@ const BookOption = ({ title, author, borrowedDate, returnDate, onPress }) => {
 };
 
 const BorrowingDetailsScreen = ({ route, navigation }) => {
-  const { memberName, memberSurname, borrowedDate, returnDate } = route.params;
+  const { memberName, memberSurname, borrowedDate, returnDate, title, author } =
+    route.params;
 
   const options = [
-    { title: "Book Title 1", author: "Author 1", borrowedDate, returnDate },
-    { title: "Book Title 2", author: "Author 2", borrowedDate, returnDate },
-    { title: "Book Title 3", author: "Author 3", borrowedDate, returnDate },
+    {
+      title: "Book Title 1",
+      author: "Author 1",
+      borrowedDate,
+      returnDate,
+    },
+    {
+      title: "Book Title 2",
+      author: "Author 2",
+      borrowedDate,
+      returnDate,
+    },
+    {
+      title: "Book Title 3",
+      author: "Author 3",
+      borrowedDate,
+      returnDate,
+    },
   ];
 
   return (
@@ -76,13 +92,14 @@ const BorrowingDetailsScreen = ({ route, navigation }) => {
             style={styles.value}
             onPress={() =>
               navigation.navigate("Book Details", {
-                bookId: "bookIdHere",
+                title,
+                author,
+                borrowedDate,
+                returnDate,
               })
             }
           >
-            <Text style={styles.value} nav>
-              hh
-            </Text>
+            <Text style={styles.value}>{title}</Text>
             <MaterialIcons
               name="navigate-next"
               size={18}
@@ -101,7 +118,13 @@ const BorrowingDetailsScreen = ({ route, navigation }) => {
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.label}>Borrowed Duration:</Text>
-          <Text style={styles.value}>days</Text>
+          <Text style={styles.value}>
+            {Math.ceil(
+              (new Date(returnDate) - new Date(borrowedDate)) /
+                (1000 * 3600 * 24)
+            )}{" "}
+            days
+          </Text>
         </View>
         <Progress value={50} w={200} size="sm">
           <ProgressFilledTrack />
@@ -117,7 +140,11 @@ const BorrowingDetailsScreen = ({ route, navigation }) => {
           borrowedDate={option.borrowedDate}
           returnDate={option.returnDate}
           onPress={() =>
-            navigation.navigate("Borrowing Details", { ...option })
+            navigation.navigate("Borrowing Details", {
+              ...option,
+              memberName,
+              memberSurname,
+            })
           }
         />
       ))}

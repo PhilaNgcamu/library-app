@@ -22,8 +22,6 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
           language,
         } = bookInfo;
 
-        console.log(endpoint);
-
         const coverUrl = imageLinks ? imageLinks.thumbnail : null;
 
         dispatch(
@@ -34,7 +32,7 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
             categories[0],
             coverUrl,
             description,
-            pageCount || 300,
+            pageCount || "N/A",
             publishedDate,
             language
           )

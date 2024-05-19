@@ -9,6 +9,7 @@ import {
   Modal,
   Dimensions,
   TextInput,
+  Platform,
 } from "react-native";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,9 +28,10 @@ const ViewBookScreen = ({ navigation, route }) => {
   const book = useSelector((state) =>
     state.books.books.find((book) => book.id === bookId)
   );
-  const [borrowedDate, setBorrowedDate] = useState(new Date(1598051730000));
-  const [returnDate, setReturnDate] = useState(new Date(1598051730000));
-
+  const [borrowedDate, setBorrowedDate] = useState(new Date());
+  const [returnDate, setReturnDate] = useState(new Date());
+  const [showBorrowedDatePicker, setShowBorrowedDatePicker] = useState(false);
+  const [showReturnDatePicker, setShowReturnDatePicker] = useState(false);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [showMoreUsers, setShowMoreUsers] = useState(false);
 
@@ -47,7 +49,6 @@ const ViewBookScreen = ({ navigation, route }) => {
 
   const handleBorrow = () => {
     setIsBorrowing(true);
-    setSnackbarVisible(true);
     setIsModalVisible(true);
   };
 
@@ -61,33 +62,26 @@ const ViewBookScreen = ({ navigation, route }) => {
       memberName: memberName,
       memberSurname: memberSurname,
       book: book,
+      borrowedDate: borrowedDate,
+      returnDate: returnDate,
     };
     setBorrowedBooks([...borrowedBooks, borrowedBookDetails]);
+    setSnackbarVisible(true);
     closeModal();
   };
 
-  const handleBorrowedDate = (event, selectedDate) => {
-    const currentDate = selectedDate;
-    setBorrowedDate(currentDate);
+  const handleBorrowedDateChange = (event, selectedDate) => {
+    if (selectedDate !== undefined) {
+      setBorrowedDate(selectedDate);
+    }
+    setShowBorrowedDatePicker(false);
   };
 
-  const handleReturnDate = () => {
-    const date = new Date();
-    const returnDate = date.toLocaleDateString();
-    setReturnDate(returnDate);
-  };
-
-  const showMode = (currentMode) => {
-    DateTimePickerAndroid.open({
-      value: date,
-      onChange,
-      mode: currentMode,
-      is24Hour: true,
-    });
-  };
-
-  const showDatepicker = () => {
-    showMode("date");
+  const handleReturnDateChange = (event, selectedDate) => {
+    if (selectedDate !== undefined) {
+      setReturnDate(selectedDate);
+    }
+    setShowReturnDatePicker(false);
   };
 
   const navigateToBorrowingDetails = (borrowedBook) => {
@@ -193,23 +187,45 @@ const ViewBookScreen = ({ navigation, route }) => {
               </View>
               <View>
                 <Text style={styles.inputLabel}>Borrowed Date:</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter Date"
-                  value={borrowedDate}
-                  onPress={handleBorrowedDate}
-                />
+                <TouchableOpacity
+                  onPress={() => setShowBorrowedDatePicker(true)}
+                >
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Select Date"
+                    value={borrowedDate.toLocaleDateString()}
+                    editable={false}
+                  />
+                </TouchableOpacity>
               </View>
               <View>
                 <Text style={styles.inputLabel}>Return Date:</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter Date"
-                  onChangeText={handleReturnDate}
-                />
+                <TouchableOpacity onPress={() => setShowReturnDatePicker(true)}>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Select Date"
+                    value={returnDate.toLocaleDateString()}
+                    editable={false}
+                  />
+                </TouchableOpacity>
               </View>
+              {showBorrowedDatePicker && (
+                <DateTimePicker
+                  value={borrowedDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleBorrowedDateChange}
+                />
+              )}
+              {showReturnDatePicker && (
+                <DateTimePicker
+                  value={returnDate}
+                  mode="date"
+                  display="spinner"
+                  onChange={handleReturnDateChange}
+                />
+              )}
             </View>
-
             <View style={styles.modalButtonContainer}>
               <TouchableOpacity
                 onPress={handleSubmitForm}
@@ -219,43 +235,14 @@ const ViewBookScreen = ({ navigation, route }) => {
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={closeModal}
-                style={{
-                  padding: 10,
-                  borderRadius: 5,
-                  width: "40%",
-                  borderWidth: 1,
-                  marginLeft: 65,
-                  borderColor: "#32a244",
-                }}
+                style={styles.cancelButton}
               >
-                <Text
-                  style={{
-                    color: "#32a244",
-                    textAlign: "center",
-                  }}
-                >
-                  Cancel
-                </Text>
+                <Text style={styles.cancelButtonText}>Cancel</Text>
               </TouchableOpacity>
             </View>
           </View>
         </View>
       </Modal>
-      <Snackbar
-        visible={snackbarVisible && !isModalVisible}
-        style={{ backgroundColor: "#32a244", zIndex: 1000 }}
-        icon="check-circle"
-        onDismiss={() => {
-          setIsBorrowing(false);
-          setSnackbarVisible(false);
-        }}
-        duration={2000}
-        action={{
-          textColor: "white",
-        }}
-      >
-        Book borrowed successfully!
-      </Snackbar>
       {borrowedBooks.length > 0 && (
         <View style={styles.borrowedInfoContainer}>
           <Text style={styles.borrowedInfoTitle}>Current Users</Text>
@@ -281,6 +268,20 @@ const ViewBookScreen = ({ navigation, route }) => {
           )}
         </View>
       )}
+      <Snackbar
+        visible={snackbarVisible && !isModalVisible}
+        style={{ backgroundColor: "#32a244", zIndex: 1000 }}
+        onDismiss={() => {
+          setIsBorrowing(false);
+          setSnackbarVisible(false);
+        }}
+        duration={2000}
+        action={{
+          textColor: "white",
+        }}
+      >
+        Book borrowed successfully!
+      </Snackbar>
     </ScrollView>
   );
 };
@@ -359,11 +360,13 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: "center",
+    width: "90%", // Ensure modal width fits well on all screens
   },
   modalTitle: {
     fontSize: 20,
     fontWeight: "bold",
     marginBottom: 10,
+    textAlign: "center",
   },
   modalMessage: {
     fontSize: 16,
@@ -374,6 +377,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-around",
     width: "100%",
+    marginTop: 20,
   },
   modalButton: {
     backgroundColor: "#32a244",
@@ -387,13 +391,26 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     textAlign: "center",
   },
+  cancelButton: {
+    padding: 10,
+    borderRadius: 5,
+    width: "40%",
+    borderWidth: 1,
+    borderColor: "#32a244",
+    alignItems: "center",
+  },
+  cancelButtonText: {
+    color: "#32a244",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
   textInput: {
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
     padding: 10,
     marginBottom: 10,
-    marginRight: 130,
     width: "100%",
     backgroundColor: "#f9f9f9",
     fontSize: 16,
@@ -447,6 +464,12 @@ const styles = StyleSheet.create({
   borrowedInfoText: {
     fontSize: 16,
     color: "#333",
+  },
+  seeMoreButton: {
+    color: "#32a244",
+    textAlign: "center",
+    fontWeight: "bold",
+    marginTop: 10,
   },
 });
 

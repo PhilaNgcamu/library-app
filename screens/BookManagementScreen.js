@@ -24,10 +24,9 @@ const BookManagementScreen = () => {
   const [sortBy, setSortBy] = useState(defaultSortBy);
   const [filterBy, setFilterBy] = useState(defaultFilterBy);
   const [searchQuery, setSearchQuery] = useState("");
-  const [pageNumber, setPageNumber] = useState(1);
+
   const [showNoBooksModal, setShowNoBooksModal] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const booksPerPage = 10;
 
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.books);
@@ -248,7 +247,9 @@ const styles = StyleSheet.create({
   sortFilterContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
     marginBottom: 10,
+    marginTop: 10,
     paddingHorizontal: 10,
   },
   sortContainer: {
@@ -257,7 +258,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    padding: 1,
   },
   filterContainer: {
     flex: 1,
@@ -271,7 +271,7 @@ const styles = StyleSheet.create({
   },
   bookItem: {
     flex: 1,
-    margin: 5,
+    margin: 10,
     backgroundColor: "#fff",
     borderRadius: 10,
     elevation: 3,

@@ -7,11 +7,12 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { Progress, ProgressFilledTrack } from "@gluestack-ui/themed";
-import { AntDesign, MaterialIcons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
-const BookOption = ({ title, author, borrowedDate, returnDate, onPress }) => {
-  const borrowedDateObj = new Date(borrowedDate);
-  const returnDateObj = new Date(returnDate);
+const BookOption = ({ book, onPress }) => {
+  const borrowedDateObj = new Date(book.borrowedDate);
+  const returnDateObj = new Date(book.returnDate);
   const currentDateObj = new Date();
 
   const borrowedDuration = Math.ceil(
@@ -22,15 +23,15 @@ const BookOption = ({ title, author, borrowedDate, returnDate, onPress }) => {
   const remainingDays = Math.ceil(remainingTimeMs / (1000 * 3600 * 24));
   const remainingMonths = Math.floor(remainingDays / 30);
 
-  const totalDurationDays = borrowedDuration; // The total duration in days
+  const totalDurationDays = borrowedDuration;
   const progressPercentage =
     ((borrowedDuration - remainingDays) / totalDurationDays) * 100;
 
   return (
     <TouchableOpacity onPress={onPress} style={styles.bookOption}>
       <View style={styles.bookInfo}>
-        <Text style={styles.bookTitle}>{title}</Text>
-        <Text style={styles.bookAuthor}>{author}</Text>
+        <Text style={styles.bookTitle}>{book.title}</Text>
+        <Text style={styles.bookAuthor}>{book.author}</Text>
       </View>
       <View style={styles.bookProgress}>
         <Progress
@@ -49,30 +50,75 @@ const BookOption = ({ title, author, borrowedDate, returnDate, onPress }) => {
   );
 };
 
-const BorrowingDetailsScreen = ({ route, navigation }) => {
-  const { memberName, memberSurname, borrowedDate, returnDate, title, author } =
-    route.params;
+const BorrowingDetailsScreen = ({ route }) => {
+  const navigation = useNavigation();
+  const {
+    memberName,
+    memberSurname,
+    borrowedDate,
+    returnDate,
+    bookItem,
+    author,
+  } = route.params;
+
+  const borrowedDateObj = new Date(borrowedDate);
+  const returnDateObj = new Date(returnDate);
+
+  const currentBook = {
+    id: 0,
+    title: bookItem,
+    author: author,
+    borrowedDate: borrowedDate,
+    returnDate: returnDate,
+    coverUrl: "https://example.com/currentBook.jpg",
+    available: true,
+  };
 
   const options = [
     {
+      id: 1,
       title: "Book Title 1",
       author: "Author 1",
       borrowedDate,
       returnDate,
+      coverUrl: "https://example.com/book1.jpg",
+      available: true,
     },
     {
+      id: 2,
       title: "Book Title 2",
       author: "Author 2",
       borrowedDate,
       returnDate,
+      coverUrl: "https://example.com/book2.jpg",
+      available: true,
     },
     {
+      id: 3,
       title: "Book Title 3",
       author: "Author 3",
       borrowedDate,
       returnDate,
+      coverUrl: "https://example.com/book3.jpg",
+      available: true,
     },
   ];
+
+  const uniqueOptions = [
+    currentBook,
+    ...options.filter((option) => option.title !== bookItem),
+  ];
+
+  const handleViewBookDetails = (book) => {
+    navigation.navigate("Borrowing Details", {
+      memberName,
+      memberSurname,
+      borrowedDate: book.borrowedDate,
+      returnDate: book.returnDate,
+      bookItem: book.title,
+      author: book.author,
+    });
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
@@ -88,41 +134,22 @@ const BorrowingDetailsScreen = ({ route, navigation }) => {
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.label}>Current Book:</Text>
-          <TouchableOpacity
-            style={styles.value}
-            onPress={() =>
-              navigation.navigate("Book Details", {
-                title,
-                author,
-                borrowedDate,
-                returnDate,
-              })
-            }
-          >
-            <Text style={styles.value}>{title}</Text>
-            <MaterialIcons
-              name="navigate-next"
-              size={18}
-              style={styles.icon}
-              color="black"
-            />
-          </TouchableOpacity>
+          <Text style={styles.value}>{bookItem}</Text>
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.label}>Borrowed Date:</Text>
-          <Text style={styles.value}>{borrowedDate}</Text>
+          <Text style={styles.value}>
+            {borrowedDateObj.toLocaleDateString()}
+          </Text>
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.label}>Return Date:</Text>
-          <Text style={styles.value}>{returnDate}</Text>
+          <Text style={styles.value}>{returnDateObj.toLocaleDateString()}</Text>
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.label}>Borrowed Duration:</Text>
           <Text style={styles.value}>
-            {Math.ceil(
-              (new Date(returnDate) - new Date(borrowedDate)) /
-                (1000 * 3600 * 24)
-            )}{" "}
+            {Math.ceil((returnDateObj - borrowedDateObj) / (1000 * 3600 * 24))}{" "}
             days
           </Text>
         </View>
@@ -131,21 +158,12 @@ const BorrowingDetailsScreen = ({ route, navigation }) => {
         </Progress>
       </View>
 
-      <Text style={styles.optionsTitle}>Other Current Reads</Text>
-      {options.map((option, index) => (
+      <Text style={styles.optionsTitle}>Current Reads</Text>
+      {uniqueOptions.map((option) => (
         <BookOption
-          key={index}
-          title={option.title}
-          author={option.author}
-          borrowedDate={option.borrowedDate}
-          returnDate={option.returnDate}
-          onPress={() =>
-            navigation.navigate("Borrowing Details", {
-              ...option,
-              memberName,
-              memberSurname,
-            })
-          }
+          key={option.id}
+          book={option}
+          onPress={() => handleViewBookDetails(option)}
         />
       ))}
     </ScrollView>

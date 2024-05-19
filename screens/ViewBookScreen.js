@@ -85,7 +85,16 @@ const ViewBookScreen = ({ navigation, route }) => {
   };
 
   const navigateToBorrowingDetails = (borrowedBook) => {
-    navigation.navigate("Borrowing Details", borrowedBook);
+    navigation.navigate("Borrowing Details", {
+      memberName: borrowedBook.memberName,
+      memberSurname: borrowedBook.memberSurname,
+      bookItem: book.title,
+      author: book.author,
+      borrowedDate: borrowedBook.borrowedDate.toISOString(),
+      returnDate: borrowedBook.returnDate.toISOString(),
+      bookId: book.id,
+      coverUrl: book.coverUrl,
+    });
   };
 
   return (

@@ -31,6 +31,11 @@ const booksReducer = (state = initialState, action) => {
         ...state,
         books: [...state.books, action.payload],
       };
+    case actionTypes.GET_ALL_BOOKS:
+      return {
+        ...state,
+        books: action.payload,
+      };
     case actionTypes.INCREASE_BOOK_COUNT:
       return {
         ...state,

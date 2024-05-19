@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useState, useEffect } from "react";
 import { Text, View, StyleSheet, ActivityIndicator } from "react-native";
 import { Camera } from "expo-camera";
 import { useDispatch } from "react-redux";
@@ -9,14 +9,20 @@ import { Button, ButtonText } from "@gluestack-ui/themed";
 const QRCodeScannerScreen = () => {
   const [hasPermission, setHasPermission] = useState(null);
   const [scanned, setScanned] = useState(false);
+  const [cameraKey, setCameraKey] = useState(0);
   const dispatch = useDispatch();
+
+  useEffect(() => {
+    (async () => {
+      const { status } = await Camera.requestCameraPermissionsAsync();
+      setHasPermission(status === "granted");
+    })();
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
-      (async () => {
-        const { status } = await Camera.requestCameraPermissionsAsync();
-        setHasPermission(status === "granted");
-      })();
+      setScanned(false);
+      setCameraKey((prevKey) => prevKey + 1);
       return () => {};
     }, [])
   );
@@ -57,6 +63,7 @@ const QRCodeScannerScreen = () => {
   return (
     <View style={styles.container}>
       <Camera
+        key={cameraKey}
         style={styles.camera}
         type={Camera.Constants.Type.back}
         onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
@@ -64,7 +71,6 @@ const QRCodeScannerScreen = () => {
       {scanned && (
         <Button
           style={{ backgroundColor: "#32a244" }}
-          title={"Tap to Scan Again"}
           onPress={() => setScanned(false)}
         >
           <ButtonText>Tap to Scan Again</ButtonText>

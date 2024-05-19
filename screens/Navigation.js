@@ -20,7 +20,6 @@ const StackNavigator = () => {
           headerShown: false,
         }}
       />
-
       <Stack.Screen name="Book Details" component={ViewBookScreen} />
       <Stack.Screen name="Scan QR Code" component={QRCodeScannerScreen} />
       <Stack.Screen

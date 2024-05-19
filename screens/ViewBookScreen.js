@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -21,7 +21,6 @@ const ViewBookScreen = ({ navigation, route }) => {
   const [isBorrowing, setIsBorrowing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
-  const [available, setAvailable] = useState(true);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [memberName, setMemberName] = useState("");
   const [memberSurname, setMemberSurname] = useState("");
@@ -34,6 +33,13 @@ const ViewBookScreen = ({ navigation, route }) => {
   const [showReturnDatePicker, setShowReturnDatePicker] = useState(false);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [showMoreUsers, setShowMoreUsers] = useState(false);
+
+  useEffect(() => {
+    const isBookBorrowed = borrowedBooks.some(
+      (borrowedBook) => borrowedBook.book.id === bookId
+    );
+    setAvailable(!isBookBorrowed);
+  }, [borrowedBooks, bookId]);
 
   const handleSeeMoreUsers = () => {
     setShowMoreUsers(true);
@@ -157,7 +163,7 @@ const ViewBookScreen = ({ navigation, route }) => {
             bgColor="#32a244"
             onPress={handleBorrow}
             style={styles.button}
-            disabled={isBorrowing}
+            disabled={!available || isBorrowing}
           >
             <ButtonText>{isBorrowing ? "Borrowing..." : "Borrow"}</ButtonText>
           </Button>

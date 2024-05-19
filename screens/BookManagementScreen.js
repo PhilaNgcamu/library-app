@@ -17,7 +17,12 @@ import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
-import { addBook, deleteBook } from "../redux/actions";
+import {
+  addBook,
+  deleteBook,
+  decreaseBookCount,
+  increaseBookCount,
+} from "../redux/actions";
 
 const BookManagementScreen = () => {
   const defaultSortBy = "title";
@@ -29,6 +34,7 @@ const BookManagementScreen = () => {
 
   const [showNoBooksModal, setShowNoBooksModal] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
@@ -43,15 +49,23 @@ const BookManagementScreen = () => {
   useEffect(() => {
     handleSort(defaultSortBy);
     handleFilter(defaultFilterBy);
-  }, []);
+  }, [books]);
 
   const handleViewDetails = (bookId) => {
     navigation.navigate("Book Details", { bookId });
   };
 
   const handleDeleteBook = (bookId) => {
-    dispatch(deleteBook(bookId));
+    const book = books.find((b) => b.id === bookId);
+    if (book.count > 1) {
+      dispatch(decreaseBookCount(bookId));
+      setSnackbarMessage(`${book.count - 1} books left`);
+    } else if (book.count === 1) {
+      dispatch(decreaseBookCount(bookId));
+      setSnackbarMessage("Book marked as Not Available");
+    }
     setDropdownVisible(false);
+    setSnackbarVisible(true);
   };
 
   const handleSort = (sortBy) => {
@@ -61,7 +75,10 @@ const BookManagementScreen = () => {
         return a.title.localeCompare(b.title);
       } else if (sortBy === "author") {
         return a.author.localeCompare(b.author);
+      } else if (sortBy === "count") {
+        return b.count - a.count; // Sort in descending order by count
       }
+      return 0;
     });
     setSortedBooks(sorted);
   };
@@ -70,8 +87,9 @@ const BookManagementScreen = () => {
     setFilterBy(filterBy);
     const filtered = books.filter((book) => {
       if (filterBy === "availability") {
-        return book.available;
+        return book.count > 0;
       }
+      return true;
     });
     setFilteredBooks(filtered);
   };
@@ -89,6 +107,7 @@ const BookManagementScreen = () => {
       setFilteredBooks(filtered);
       setSortedBooks([]);
       setSnackbarVisible(true);
+      setSnackbarMessage("Search results updated");
     }
   };
 
@@ -99,6 +118,8 @@ const BookManagementScreen = () => {
 
   const handleAddBook = (newBook) => {
     dispatch(addBook(newBook));
+    setSnackbarMessage("New book added");
+    setSnackbarVisible(true);
   };
 
   const renderBookItem = ({ item }) => {
@@ -114,7 +135,7 @@ const BookManagementScreen = () => {
           style={styles.bookCover}
           resizeMode="cover"
         />
-        {item.available ? (
+        {item.count > 0 ? (
           <View style={styles.tagContainer}>
             <Text style={styles.tagText}>Available</Text>
           </View>
@@ -171,6 +192,7 @@ const BookManagementScreen = () => {
           >
             <Picker.Item label="Sort By Title" value="title" />
             <Picker.Item label="Sort By Author" value="author" />
+            <Picker.Item label="Sort By Count" value="count" />
           </Picker>
         </View>
         <View style={styles.filterContainer}>
@@ -193,6 +215,7 @@ const BookManagementScreen = () => {
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}
           contentContainerStyle={styles.bookList}
+          extraData={books}
         />
       )}
 
@@ -269,7 +292,7 @@ const BookManagementScreen = () => {
           onPress: () => setSnackbarVisible(false),
         }}
       >
-        Book found!
+        {snackbarMessage}
       </Snackbar>
     </View>
   );
@@ -336,7 +359,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 5,
     shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
   },
   tagContainer: {
     position: "absolute",

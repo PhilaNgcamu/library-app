@@ -66,6 +66,11 @@ export const increaseBookCount = (id) => ({
   payload: { id },
 });
 
+export const decreaseBookCount = (id) => ({
+  type: actionTypes.DECREASE_BOOK_COUNT,
+  payload: { id },
+});
+
 export const deleteBook = (id) => ({
   type: actionTypes.DELETE_BOOK,
   payload: { id },

@@ -81,9 +81,15 @@ export const setEditingBookId = (id) => ({
   payload: { id },
 });
 
-export const borrowBook = (bookId) => ({
+export const borrowBook = (
+  bookId,
+  memberName,
+  memberSurname,
+  borrowedDate,
+  returnDate
+) => ({
   type: actionTypes.BORROW_BOOK,
-  payload: { bookId },
+  payload: { bookId, memberName, memberSurname, borrowedDate, returnDate },
 });
 
 export const returnBook = (bookId) => ({

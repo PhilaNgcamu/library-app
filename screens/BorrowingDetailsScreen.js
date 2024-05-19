@@ -27,10 +27,14 @@ const BookOption = ({ book, onPress }) => {
   const progressPercentage =
     ((borrowedDuration - remainingDays) / totalDurationDays) * 100;
 
+  const truncateTitle = (title) => {
+    return title.length > 20 ? `${title.substring(0, 17)}...` : title;
+  };
+
   return (
     <TouchableOpacity onPress={onPress} style={styles.bookOption}>
       <View style={styles.bookInfo}>
-        <Text style={styles.bookTitle}>{book.title}</Text>
+        <Text style={styles.bookTitle}>{truncateTitle(book.title)}</Text>
         <Text style={styles.bookAuthor}>{book.author}</Text>
       </View>
       <View style={styles.bookProgress}>
@@ -52,24 +56,19 @@ const BookOption = ({ book, onPress }) => {
 
 const BorrowingDetailsScreen = ({ route }) => {
   const navigation = useNavigation();
-  const {
-    memberName,
-    memberSurname,
-    borrowedDate,
-    returnDate,
-    bookItem,
-    author,
-  } = route.params;
+  const { memberName, memberSurname, borrowedDate, bookItem, author } =
+    route.params;
 
   const borrowedDateObj = new Date(borrowedDate);
-  const returnDateObj = new Date(returnDate);
+  const returnDateObj = new Date(borrowedDateObj);
+  returnDateObj.setMonth(returnDateObj.getMonth() + 2);
 
   const currentBook = {
     id: 0,
     title: bookItem,
     author: author,
-    borrowedDate: borrowedDate,
-    returnDate: returnDate,
+    borrowedDate: borrowedDateObj.toISOString(),
+    returnDate: returnDateObj.toISOString(),
     coverUrl: "https://example.com/currentBook.jpg",
     available: true,
   };
@@ -79,8 +78,8 @@ const BorrowingDetailsScreen = ({ route }) => {
       id: 1,
       title: "Book Title 1",
       author: "Author 1",
-      borrowedDate,
-      returnDate,
+      borrowedDate: borrowedDateObj.toISOString(),
+      returnDate: returnDateObj.toISOString(),
       coverUrl: "https://example.com/book1.jpg",
       available: true,
     },
@@ -88,8 +87,8 @@ const BorrowingDetailsScreen = ({ route }) => {
       id: 2,
       title: "Book Title 2",
       author: "Author 2",
-      borrowedDate,
-      returnDate,
+      borrowedDate: borrowedDateObj.toISOString(),
+      returnDate: returnDateObj.toISOString(),
       coverUrl: "https://example.com/book2.jpg",
       available: true,
     },
@@ -97,8 +96,8 @@ const BorrowingDetailsScreen = ({ route }) => {
       id: 3,
       title: "Book Title 3",
       author: "Author 3",
-      borrowedDate,
-      returnDate,
+      borrowedDate: borrowedDateObj.toISOString(),
+      returnDate: returnDateObj.toISOString(),
       coverUrl: "https://example.com/book3.jpg",
       available: true,
     },

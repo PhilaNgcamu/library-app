@@ -2,7 +2,7 @@ import actionTypes from "./actionTypes";
 
 const initialState = {
   books: [],
-  borrowings: [],
+  borrowedBooks: [],
   title: "",
   author: "",
   genre: "",
@@ -50,13 +50,17 @@ const booksReducer = (state = initialState, action) => {
         ),
       };
     case actionTypes.BORROW_BOOK:
+      const { bookId, memberName, memberSurname, borrowedDate, returnDate } =
+        action.payload;
       return {
         ...state,
         books: state.books.map((book) =>
-          book.id === action.payload.bookId
-            ? { ...book, available: false }
-            : book
+          book.id === bookId ? { ...book, available: false } : book
         ),
+        borrowedBooks: [
+          ...state.borrowedBooks,
+          { bookId, memberName, memberSurname, borrowedDate, returnDate },
+        ],
       };
     case actionTypes.RETURN_BOOK:
       return {
@@ -65,6 +69,9 @@ const booksReducer = (state = initialState, action) => {
           book.id === action.payload.bookId
             ? { ...book, available: true }
             : book
+        ),
+        borrowedBooks: state.borrowedBooks.filter(
+          (borrowedBook) => borrowedBook.bookId !== action.payload.bookId
         ),
       };
     case actionTypes.SET_EDITING_BOOK_ID:
@@ -99,7 +106,7 @@ const booksReducer = (state = initialState, action) => {
     case actionTypes.GET_ALL_BORROWINGS:
       return {
         ...state,
-        borrowings: action.payload,
+        borrowedBooks: action.payload,
       };
 
     default:

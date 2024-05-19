@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -9,7 +9,6 @@ import {
   Modal,
   Dimensions,
   TextInput,
-  Platform,
 } from "react-native";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 import { useDispatch, useSelector } from "react-redux";
@@ -24,6 +23,10 @@ const ViewBookScreen = ({ navigation, route }) => {
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [memberName, setMemberName] = useState("");
   const [memberSurname, setMemberSurname] = useState("");
+  const [memberNameError, setMemberNameError] = useState("");
+  const [memberSurnameError, setMemberSurnameError] = useState("");
+  const [borrowedDateError, setBorrowedDateError] = useState("");
+  const [returnDateError, setReturnDateError] = useState("");
   const book = useSelector((state) =>
     state.books.books.find((book) => book.id === bookId)
   );
@@ -34,12 +37,7 @@ const ViewBookScreen = ({ navigation, route }) => {
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [showMoreUsers, setShowMoreUsers] = useState(false);
 
-  useEffect(() => {
-    const isBookBorrowed = borrowedBooks.some(
-      (borrowedBook) => borrowedBook.book.id === bookId
-    );
-    setAvailable(!isBookBorrowed);
-  }, [borrowedBooks, bookId]);
+  const available = book.count > 0;
 
   const handleSeeMoreUsers = () => {
     setShowMoreUsers(true);
@@ -61,9 +59,44 @@ const ViewBookScreen = ({ navigation, route }) => {
   const closeModal = () => {
     setIsModalVisible(false);
     setIsBorrowing(false);
+    setMemberNameError("");
+    setMemberSurnameError("");
+    setBorrowedDateError("");
+    setReturnDateError("");
   };
 
   const handleSubmitForm = () => {
+    let valid = true;
+    if (memberName.trim() === "") {
+      setMemberNameError("Member name is required.");
+      valid = false;
+    } else {
+      setMemberNameError("");
+    }
+
+    if (memberSurname.trim() === "") {
+      setMemberSurnameError("Member surname is required.");
+      valid = false;
+    } else {
+      setMemberSurnameError("");
+    }
+
+    if (!borrowedDate) {
+      setBorrowedDateError("Borrowed date is required.");
+      valid = false;
+    } else {
+      setBorrowedDateError("");
+    }
+
+    if (!returnDate) {
+      setReturnDateError("Return date is required.");
+      valid = false;
+    } else {
+      setReturnDateError("");
+    }
+
+    if (!valid) return;
+
     const borrowedBookDetails = {
       memberName: memberName,
       memberSurname: memberSurname,
@@ -163,7 +196,7 @@ const ViewBookScreen = ({ navigation, route }) => {
             bgColor="#32a244"
             onPress={handleBorrow}
             style={styles.button}
-            disabled={!available || isBorrowing}
+            disabled={isBorrowing || !available}
           >
             <ButtonText>{isBorrowing ? "Borrowing..." : "Borrow"}</ButtonText>
           </Button>
@@ -190,6 +223,9 @@ const ViewBookScreen = ({ navigation, route }) => {
                   value={memberName}
                   onChangeText={handleMemberNameChange}
                 />
+                {memberNameError ? (
+                  <Text style={styles.errorText}>{memberNameError}</Text>
+                ) : null}
               </View>
               <View>
                 <Text style={styles.inputLabel}>Member's Surname:</Text>
@@ -199,6 +235,9 @@ const ViewBookScreen = ({ navigation, route }) => {
                   value={memberSurname}
                   onChangeText={handleMemberSurnameChange}
                 />
+                {memberSurnameError ? (
+                  <Text style={styles.errorText}>{memberSurnameError}</Text>
+                ) : null}
               </View>
               <View>
                 <Text style={styles.inputLabel}>Borrowed Date:</Text>
@@ -212,6 +251,9 @@ const ViewBookScreen = ({ navigation, route }) => {
                     editable={false}
                   />
                 </TouchableOpacity>
+                {borrowedDateError ? (
+                  <Text style={styles.errorText}>{borrowedDateError}</Text>
+                ) : null}
               </View>
               <View>
                 <Text style={styles.inputLabel}>Return Date:</Text>
@@ -223,6 +265,9 @@ const ViewBookScreen = ({ navigation, route }) => {
                     editable={false}
                   />
                 </TouchableOpacity>
+                {returnDateError ? (
+                  <Text style={styles.errorText}>{returnDateError}</Text>
+                ) : null}
               </View>
               {showBorrowedDatePicker && (
                 <DateTimePicker
@@ -440,6 +485,10 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginBottom: 5,
     color: "#555",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 14,
   },
   borrowedInfoContainer: {
     backgroundColor: "#fff",

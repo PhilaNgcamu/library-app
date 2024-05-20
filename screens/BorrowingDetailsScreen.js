@@ -28,6 +28,7 @@ const BookOption = ({ book, onPress }) => {
     ((borrowedDuration - remainingDays) / totalDurationDays) * 100;
 
   const truncateTitle = (title) => {
+    console.log(``);
     return title.length > 20 ? `${title.substring(0, 17)}...` : title;
   };
 

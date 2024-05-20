@@ -59,7 +59,7 @@ const BookManagementScreen = () => {
     const book = books.find((b) => b.id === bookId);
     if (book.count > 1) {
       dispatch(decreaseBookCount(bookId));
-      setSnackbarMessage(`${book.count - 1} books left`);
+      setSnackbarMessage(`${book.count - 1} book(s) left`);
     } else if (book.count === 1) {
       dispatch(decreaseBookCount(bookId));
       setSnackbarMessage("Book marked as Not Available");
@@ -76,7 +76,7 @@ const BookManagementScreen = () => {
       } else if (sortBy === "author") {
         return a.author.localeCompare(b.author);
       } else if (sortBy === "count") {
-        return b.count - a.count; // Sort in descending order by count
+        return b.count - a.count;
       }
       return 0;
     });

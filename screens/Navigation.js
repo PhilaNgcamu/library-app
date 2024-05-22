@@ -21,7 +21,7 @@ const StackNavigator = () => {
         }}
       />
       <Stack.Screen name="Book Details" component={ViewBookScreen} />
-      <Stack.Screen name="Scan QR Code" component={QRCodeScannerScreen} />
+      <Stack.Screen name="Scan Barcode" component={QRCodeScannerScreen} />
       <Stack.Screen
         name="Borrowing Details"
         component={BorrowingDetailsScreen}

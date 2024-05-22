@@ -90,31 +90,3 @@ export const returnBook = (bookId) => ({
   type: actionTypes.RETURN_BOOK,
   payload: { bookId },
 });
-
-export const updateBookDetails = (bookId, title, author, genre) => ({
-  type: actionTypes.UPDATE_BOOK_DETAILS,
-  payload: { bookId, title, author, genre },
-});
-
-export const getAllBooks = () => ({
-  type: actionTypes.GET_ALL_BOOKS,
-});
-
-export const getAllBorrowings = () => ({
-  type: actionTypes.GET_ALL_BORROWINGS,
-});
-
-export const setTitle = (title) => ({
-  type: actionTypes.SET_TITLE,
-  payload: { title },
-});
-
-export const setAuthor = (author) => ({
-  type: actionTypes.SET_AUTHOR,
-  payload: { author },
-});
-
-export const setGenre = (genre) => ({
-  type: actionTypes.SET_GENRE,
-  payload: { genre },
-});

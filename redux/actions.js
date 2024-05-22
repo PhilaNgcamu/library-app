@@ -43,7 +43,7 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
         );
 
         if (existingBook) {
-          dispatch(increaseBookCount(isbn));
+          dispatch(increaseBookCount(existingBook));
         } else {
           dispatch(addBook(book));
         }
@@ -61,9 +61,9 @@ export const addBook = (book) => ({
   payload: book,
 });
 
-export const increaseBookCount = (id) => ({
+export const increaseBookCount = (doesExist) => ({
   type: actionTypes.INCREASE_BOOK_COUNT,
-  payload: { id },
+  payload: doesExist,
 });
 
 export const decreaseBookCount = (id) => ({

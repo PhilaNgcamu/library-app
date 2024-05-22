@@ -1,14 +1,16 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Text,
   View,
   StyleSheet,
   ActivityIndicator,
   Dimensions,
+  Modal,
+  TouchableOpacity,
 } from "react-native";
 import { Camera } from "expo-camera";
 import { useDispatch, useSelector } from "react-redux";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import {
   searchBook,
   setScanned,
@@ -22,9 +24,12 @@ const { width, height } = Dimensions.get("window");
 
 const QRCodeScannerScreen = () => {
   const dispatch = useDispatch();
+  const navigation = useNavigation();
   const hasPermission = useSelector((state) => state.books.hasPermission);
   const cameraKey = useSelector((state) => state.books.cameraKey);
   const scanned = useSelector((state) => state.books.scanned);
+
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     (async () => {
@@ -41,7 +46,7 @@ const QRCodeScannerScreen = () => {
     }, [dispatch])
   );
 
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = ({ data }) => {
     dispatch(setScanned());
     console.log(data);
 
@@ -49,12 +54,24 @@ const QRCodeScannerScreen = () => {
     console.log("ISBN:", isbn);
 
     dispatch(searchBook(isbn));
+
+    setModalVisible(true);
   };
 
   const extractISBN = (qrCodeData) => {
     const regex = /\b\d{10,13}\b/;
     const match = qrCodeData.match(regex);
     return match ? match[0] : null;
+  };
+
+  const handleScanAgain = () => {
+    setModalVisible(false);
+    dispatch(resetScanned());
+  };
+
+  const handleViewBook = () => {
+    setModalVisible(false);
+    navigation.navigate("Home");
   };
 
   if (hasPermission === null) {
@@ -93,14 +110,31 @@ const QRCodeScannerScreen = () => {
           <View style={styles.unfocusedContainer}></View>
         </View>
       </Camera>
-      {scanned && (
-        <Button
-          style={styles.scanButton}
-          onPress={() => dispatch(resetScanned())}
-        >
-          <ButtonText>Tap to Scan Again</ButtonText>
-        </Button>
-      )}
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => setModalVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Book Scanned</Text>
+            <Text style={styles.modalText}>
+              The book has been successfully scanned. Do you want to view the
+              book details?
+            </Text>
+            <View style={styles.modalButtons}>
+              <Button style={styles.modalButton} onPress={handleScanAgain}>
+                <ButtonText>Scan Again</ButtonText>
+              </Button>
+              <Button style={styles.modalButton} onPress={handleViewBook}>
+                <ButtonText>View Book</ButtonText>
+              </Button>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
@@ -135,14 +169,45 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: "transparent",
   },
-  scanButton: {
-    position: "absolute",
-    backgroundColor: "#32a244",
-    bottom: 20,
-    width: "90%",
-    borderRadius: 10,
-    alignSelf: "center",
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
     justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "80%",
+    backgroundColor: "white",
+    borderRadius: 10,
+    padding: 20,
+    alignItems: "center",
+    shadowColor: "#000",
+    shadowOpacity: 0.2,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: "bold",
+    marginBottom: 10,
+  },
+  modalText: {
+    fontSize: 16,
+    textAlign: "center",
+    marginBottom: 20,
+  },
+  modalButtons: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    width: "100%",
+  },
+  modalButton: {
+    flex: 1,
+    marginHorizontal: 5,
+    backgroundColor: "#32a244",
+    paddingVertical: 10,
+    borderRadius: 5,
     alignItems: "center",
   },
 });

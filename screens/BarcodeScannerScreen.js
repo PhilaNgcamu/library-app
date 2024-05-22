@@ -1,34 +1,41 @@
-import React, { useCallback, useState, useEffect } from "react";
+// QRCodeScannerScreen.js
+import React, { useCallback, useEffect } from "react";
 import { Text, View, StyleSheet, ActivityIndicator } from "react-native";
 import { Camera } from "expo-camera";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useFocusEffect } from "@react-navigation/native";
-import { searchBook } from "../redux/actions";
+import {
+  searchBook,
+  setScanned,
+  resetScanned,
+  setHasPermission,
+  incrementCameraKey,
+} from "../redux/actions";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 
 const QRCodeScannerScreen = () => {
-  const [hasPermission, setHasPermission] = useState(null);
-  const [scanned, setScanned] = useState(false);
-  const [cameraKey, setCameraKey] = useState(0);
   const dispatch = useDispatch();
+  const hasPermission = useSelector((state) => state.books.hasPermission);
+  const cameraKey = useSelector((state) => state.books.cameraKey);
+  const scanned = useSelector((state) => state.books.scanned);
 
   useEffect(() => {
     (async () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
-      setHasPermission(status === "granted");
+      dispatch(setHasPermission(status === "granted"));
     })();
-  }, []);
+  }, [dispatch]);
 
   useFocusEffect(
     useCallback(() => {
-      setScanned(false);
-      setCameraKey((prevKey) => prevKey + 1);
+      dispatch(resetScanned());
+      dispatch(incrementCameraKey());
       return () => {};
-    }, [])
+    }, [dispatch])
   );
 
   const handleBarCodeScanned = ({ type, data }) => {
-    setScanned(true);
+    dispatch(setScanned());
     console.log(data);
 
     const isbn = extractISBN(data);
@@ -56,6 +63,7 @@ const QRCodeScannerScreen = () => {
       />
     );
   }
+
   if (hasPermission === false) {
     return <Text>No access to camera</Text>;
   }
@@ -71,7 +79,7 @@ const QRCodeScannerScreen = () => {
       {scanned && (
         <Button
           style={{ backgroundColor: "#32a244" }}
-          onPress={() => setScanned(false)}
+          onPress={() => dispatch(resetScanned())}
         >
           <ButtonText>Tap to Scan Again</ButtonText>
         </Button>

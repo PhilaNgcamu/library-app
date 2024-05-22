@@ -75,3 +75,20 @@ export const deleteBook = (id) => ({
   type: actionTypes.DELETE_BOOK,
   payload: { id },
 });
+
+export const setScanned = () => ({
+  type: actionTypes.SET_SCANNED,
+});
+
+export const resetScanned = () => ({
+  type: actionTypes.RESET_SCANNED,
+});
+
+export const setHasPermission = (hasPermission) => ({
+  type: actionTypes.SET_HAS_PERMISSION,
+  payload: hasPermission,
+});
+
+export const incrementCameraKey = () => ({
+  type: actionTypes.INCREMENT_CAMERA_KEY,
+});

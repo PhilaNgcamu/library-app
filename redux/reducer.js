@@ -2,6 +2,9 @@ import actionTypes from "./actionTypes";
 
 const initialState = {
   books: [],
+  scanned: false,
+  hasPermission: null,
+  cameraKey: 0,
 };
 
 const booksReducer = (state = initialState, action) => {
@@ -35,6 +38,30 @@ const booksReducer = (state = initialState, action) => {
       return {
         ...state,
         books: state.books.filter((book) => book.id !== action.payload.id),
+      };
+
+    case actionTypes.SET_SCANNED:
+      return {
+        ...state,
+        scanned: true,
+      };
+
+    case actionTypes.RESET_SCANNED:
+      return {
+        ...state,
+        scanned: false,
+      };
+
+    case actionTypes.SET_HAS_PERMISSION:
+      return {
+        ...state,
+        hasPermission: action.payload,
+      };
+
+    case actionTypes.INCREMENT_CAMERA_KEY:
+      return {
+        ...state,
+        cameraKey: state.cameraKey + 1,
       };
 
     default:

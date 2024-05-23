@@ -17,16 +17,11 @@ import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
-import {
-  addBook,
-  deleteBook,
-  decreaseBookCount,
-  increaseBookCount,
-} from "../redux/actions";
+import { addBook, decreaseBookCount } from "../redux/actions";
 
 const BookManagementScreen = () => {
   const defaultSortBy = "title";
-  const defaultFilterBy = "availability";
+  const defaultFilterBy = "all";
 
   const [sortBy, setSortBy] = useState(defaultSortBy);
   const [filterBy, setFilterBy] = useState(defaultFilterBy);
@@ -43,13 +38,13 @@ const BookManagementScreen = () => {
   const books = useSelector((state) => state.books.books);
   const navigation = useNavigation();
 
-  const [filteredBooks, setFilteredBooks] = useState([]);
-  const [sortedBooks, setSortedBooks] = useState([]);
+  const [filteredBooks, setFilteredBooks] = useState(books);
+  const [sortedBooks, setSortedBooks] = useState(books);
 
   useEffect(() => {
-    handleSort(defaultSortBy);
-    handleFilter(defaultFilterBy);
-  }, [books]);
+    handleSort(sortBy);
+    handleFilter(filterBy);
+  }, [books, sortBy, filterBy]);
 
   const handleViewDetails = (bookId) => {
     navigation.navigate("Book Details", { bookId });
@@ -70,7 +65,7 @@ const BookManagementScreen = () => {
 
   const handleSort = (sortBy) => {
     setSortBy(sortBy);
-    const sorted = [...books].sort((a, b) => {
+    const sorted = [...filteredBooks].sort((a, b) => {
       if (sortBy === "title") {
         return a.title.localeCompare(b.title);
       } else if (sortBy === "author") {
@@ -92,6 +87,7 @@ const BookManagementScreen = () => {
       return true;
     });
     setFilteredBooks(filtered);
+    handleSort(sortBy); // Ensure the filtered list is also sorted
   };
 
   const handleSearch = () => {
@@ -105,7 +101,7 @@ const BookManagementScreen = () => {
       setShowNoBooksModal(true);
     } else {
       setFilteredBooks(filtered);
-      setSortedBooks([]);
+      setSortedBooks(filtered);
       setSnackbarVisible(true);
       setSnackbarMessage("Search results updated");
     }
@@ -201,6 +197,7 @@ const BookManagementScreen = () => {
             style={{ height: 50, width: 150 }}
             onValueChange={(itemValue) => handleFilter(itemValue)}
           >
+            <Picker.Item label="Show All Books" value="all" />
             <Picker.Item label="Filter By Availability" value="availability" />
           </Picker>
         </View>

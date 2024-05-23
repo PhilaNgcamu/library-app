@@ -337,7 +337,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: "#ccc",
     borderRadius: 5,
-    padding: 1,
   },
   filterContainer: {
     flex: 1,

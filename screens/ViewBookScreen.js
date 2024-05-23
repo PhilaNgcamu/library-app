@@ -137,200 +137,205 @@ const ViewBookScreen = ({ navigation, route }) => {
   };
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      <View style={styles.coverContainer}>
-        <Image source={{ uri: book.coverUrl }} style={styles.cover} />
-      </View>
-      <View style={styles.infoContainer}>
-        <View style={styles.row}>
-          <Text style={styles.label}>Title:</Text>
-          <Text style={styles.text}>{book.title}</Text>
+    <View>
+      <ScrollView contentContainerStyle={styles.container}>
+        <View style={styles.coverContainer}>
+          <Image source={{ uri: book.coverUrl }} style={styles.cover} />
         </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Author:</Text>
-          <Text style={styles.text}>{book.author}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Genre:</Text>
-          <Text style={styles.text}>{book.genre}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Description:</Text>
-          <View
-            style={[
-              styles.descriptionContainer,
-              { maxWidth: Dimensions.get("window").width * 0.7 },
-            ]}
-          >
-            <TouchableOpacity
-              onPress={() => setShowFullDescription(!showFullDescription)}
+        <View style={styles.infoContainer}>
+          <View style={styles.row}>
+            <Text style={styles.label}>Title:</Text>
+            <Text style={styles.text}>{book.title}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Author:</Text>
+            <Text style={styles.text}>{book.author}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Genre:</Text>
+            <Text style={styles.text}>{book.genre}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Description:</Text>
+            <View
+              style={[
+                styles.descriptionContainer,
+                { maxWidth: Dimensions.get("window").width * 0.7 },
+              ]}
             >
-              <Text style={styles.description}>
-                {showFullDescription
-                  ? book.description
-                  : `${book.description.substring(0, 100)}... See more`}
-              </Text>
-            </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setShowFullDescription(!showFullDescription)}
+              >
+                <Text style={styles.description}>
+                  {showFullDescription
+                    ? book.description
+                    : `${book.description.substring(0, 100)}... See more`}
+                </Text>
+              </TouchableOpacity>
+            </View>
           </View>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Page Count:</Text>
-          <Text style={styles.text}>{book.pageCount}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Published Date:</Text>
-          <Text style={styles.text}>{book.publishedDate}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Language:</Text>
-          <Text style={styles.text}>{book.language}</Text>
-        </View>
-        <View style={styles.row}>
-          <Text style={styles.label}>Availability:</Text>
-          <Text style={[styles.text, { color: available ? "green" : "red" }]}>
-            {available ? "Available" : "Not Available"}
-          </Text>
-        </View>
-        <View style={styles.buttonsContainer}>
-          <Button
-            bgColor="#32a244"
-            onPress={handleBorrow}
-            style={styles.button}
-            disabled={isBorrowing || !available}
-          >
-            <ButtonText>{isBorrowing ? "Borrowing..." : "Borrow"}</ButtonText>
-          </Button>
-        </View>
-      </View>
-      <Modal
-        animationType="fade"
-        transparent={true}
-        visible={isModalVisible}
-        onRequestClose={closeModal}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modal}>
-            <Text style={styles.modalTitle}>Borrow Book</Text>
-            <Text style={styles.modalMessage}>
-              Enter Member Details to Borrow:
+          <View style={styles.row}>
+            <Text style={styles.label}>Page Count:</Text>
+            <Text style={styles.text}>{book.pageCount}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Published Date:</Text>
+            <Text style={styles.text}>{book.publishedDate}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Language:</Text>
+            <Text style={styles.text}>{book.language}</Text>
+          </View>
+          <View style={styles.row}>
+            <Text style={styles.label}>Availability:</Text>
+            <Text style={[styles.text, { color: available ? "green" : "red" }]}>
+              {available ? "Available" : "Not Available"}
             </Text>
-            <View style={styles.inputContainer}>
-              <View>
-                <Text style={styles.inputLabel}>Member's Name:</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter Member's Name"
-                  value={memberName}
-                  onChangeText={handleMemberNameChange}
-                />
-                {memberNameError ? (
-                  <Text style={styles.errorText}>{memberNameError}</Text>
-                ) : null}
-              </View>
-              <View>
-                <Text style={styles.inputLabel}>Member's Surname:</Text>
-                <TextInput
-                  style={styles.textInput}
-                  placeholder="Enter Member's Surname"
-                  value={memberSurname}
-                  onChangeText={handleMemberSurnameChange}
-                />
-                {memberSurnameError ? (
-                  <Text style={styles.errorText}>{memberSurnameError}</Text>
-                ) : null}
-              </View>
-              <View>
-                <Text style={styles.inputLabel}>Borrowed Date:</Text>
-                <TouchableOpacity
-                  onPress={() => setShowBorrowedDatePicker(true)}
-                >
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Select Date"
-                    value={borrowedDate.toLocaleDateString()}
-                    editable={false}
-                  />
-                </TouchableOpacity>
-                {borrowedDateError ? (
-                  <Text style={styles.errorText}>{borrowedDateError}</Text>
-                ) : null}
-              </View>
-              <View>
-                <Text style={styles.inputLabel}>Return Date:</Text>
-                <TouchableOpacity onPress={() => setShowReturnDatePicker(true)}>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Select Date"
-                    value={returnDate.toLocaleDateString()}
-                    editable={false}
-                  />
-                </TouchableOpacity>
-                {returnDateError ? (
-                  <Text style={styles.errorText}>{returnDateError}</Text>
-                ) : null}
-              </View>
-              {showBorrowedDatePicker && (
-                <DateTimePicker
-                  value={borrowedDate}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleBorrowedDateChange}
-                />
-              )}
-              {showReturnDatePicker && (
-                <DateTimePicker
-                  value={returnDate}
-                  mode="date"
-                  display="spinner"
-                  onChange={handleReturnDateChange}
-                />
-              )}
-            </View>
-            <View style={styles.modalButtonContainer}>
-              <TouchableOpacity
-                onPress={handleSubmitForm}
-                style={styles.modalButton}
-              >
-                <Text style={styles.modalButtonText}>Confirm</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                onPress={closeModal}
-                style={styles.cancelButton}
-              >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
-              </TouchableOpacity>
-            </View>
+          </View>
+          <View style={styles.buttonsContainer}>
+            <Button
+              bgColor="#32a244"
+              onPress={handleBorrow}
+              style={styles.button}
+              disabled={isBorrowing || !available}
+            >
+              <ButtonText>{isBorrowing ? "Borrowing..." : "Borrow"}</ButtonText>
+            </Button>
           </View>
         </View>
-      </Modal>
-      {borrowedBooks.length > 0 && (
-        <View style={styles.borrowedInfoContainer}>
-          <Text style={styles.borrowedInfoTitle}>Current Users</Text>
-          {borrowedBooks
-            .slice(0, showMoreUsers ? borrowedBooks.length : 3)
-            .map((borrowedBook, index) => (
-              <TouchableOpacity
-                key={index}
-                onPress={() => navigateToBorrowingDetails(borrowedBook)}
-              >
-                <View style={styles.borrowedInfoItem}>
-                  <Text style={styles.borrowedInfoLabel}>Member Name:</Text>
-                  <Text style={styles.borrowedInfoText}>
-                    {borrowedBook.memberName} {borrowedBook.memberSurname}
-                  </Text>
+        <Modal
+          animationType="fade"
+          transparent={true}
+          visible={isModalVisible}
+          onRequestClose={closeModal}
+        >
+          <View style={styles.modalContainer}>
+            <View style={styles.modal}>
+              <Text style={styles.modalTitle}>Borrow Book</Text>
+              <Text style={styles.modalMessage}>
+                Enter Member Details to Borrow:
+              </Text>
+              <View style={styles.inputContainer}>
+                <View>
+                  <Text style={styles.inputLabel}>Member's Name:</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Enter Member's Name"
+                    value={memberName}
+                    onChangeText={handleMemberNameChange}
+                  />
+                  {memberNameError ? (
+                    <Text style={styles.errorText}>{memberNameError}</Text>
+                  ) : null}
                 </View>
+                <View>
+                  <Text style={styles.inputLabel}>Member's Surname:</Text>
+                  <TextInput
+                    style={styles.textInput}
+                    placeholder="Enter Member's Surname"
+                    value={memberSurname}
+                    onChangeText={handleMemberSurnameChange}
+                  />
+                  {memberSurnameError ? (
+                    <Text style={styles.errorText}>{memberSurnameError}</Text>
+                  ) : null}
+                </View>
+                <View>
+                  <Text style={styles.inputLabel}>Borrowed Date:</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowBorrowedDatePicker(true)}
+                  >
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="Select Date"
+                      value={borrowedDate.toLocaleDateString()}
+                      editable={false}
+                    />
+                  </TouchableOpacity>
+                  {borrowedDateError ? (
+                    <Text style={styles.errorText}>{borrowedDateError}</Text>
+                  ) : null}
+                </View>
+                <View>
+                  <Text style={styles.inputLabel}>Return Date:</Text>
+                  <TouchableOpacity
+                    onPress={() => setShowReturnDatePicker(true)}
+                  >
+                    <TextInput
+                      style={styles.textInput}
+                      placeholder="Select Date"
+                      value={returnDate.toLocaleDateString()}
+                      editable={false}
+                    />
+                  </TouchableOpacity>
+                  {returnDateError ? (
+                    <Text style={styles.errorText}>{returnDateError}</Text>
+                  ) : null}
+                </View>
+                {showBorrowedDatePicker && (
+                  <DateTimePicker
+                    value={borrowedDate}
+                    mode="date"
+                    display="spinner"
+                    onChange={handleBorrowedDateChange}
+                  />
+                )}
+                {showReturnDatePicker && (
+                  <DateTimePicker
+                    value={returnDate}
+                    mode="date"
+                    display="spinner"
+                    onChange={handleReturnDateChange}
+                  />
+                )}
+              </View>
+              <View style={styles.modalButtonContainer}>
+                <TouchableOpacity
+                  onPress={handleSubmitForm}
+                  style={styles.modalButton}
+                >
+                  <Text style={styles.modalButtonText}>Confirm</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  onPress={closeModal}
+                  style={styles.cancelButton}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+        {borrowedBooks.length > 0 && (
+          <View style={styles.borrowedInfoContainer}>
+            <Text style={styles.borrowedInfoTitle}>Current Users</Text>
+            {borrowedBooks
+              .slice(0, showMoreUsers ? borrowedBooks.length : 3)
+              .map((borrowedBook, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => navigateToBorrowingDetails(borrowedBook)}
+                >
+                  <View style={styles.borrowedInfoItem}>
+                    <Text style={styles.borrowedInfoLabel}>Member Name:</Text>
+                    <Text style={styles.borrowedInfoText}>
+                      {borrowedBook.memberName} {borrowedBook.memberSurname}
+                    </Text>
+                  </View>
+                </TouchableOpacity>
+              ))}
+            {!showMoreUsers && borrowedBooks.length > 3 && (
+              <TouchableOpacity onPress={handleSeeMoreUsers}>
+                <Text style={styles.seeMoreButton}>See more</Text>
               </TouchableOpacity>
-            ))}
-          {!showMoreUsers && borrowedBooks.length > 3 && (
-            <TouchableOpacity onPress={handleSeeMoreUsers}>
-              <Text style={styles.seeMoreButton}>See more</Text>
-            </TouchableOpacity>
-          )}
-        </View>
-      )}
+            )}
+          </View>
+        )}
+      </ScrollView>
+
       <Snackbar
         visible={snackbarVisible && !isModalVisible}
-        style={{ backgroundColor: "#32a244", zIndex: 1000 }}
+        style={styles.snackbar}
         onDismiss={() => {
           setIsBorrowing(false);
           setSnackbarVisible(false);
@@ -342,7 +347,7 @@ const ViewBookScreen = ({ navigation, route }) => {
       >
         Book borrowed successfully!
       </Snackbar>
-    </ScrollView>
+    </View>
   );
 };
 
@@ -534,6 +539,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "bold",
     marginTop: 10,
+  },
+  snackbar: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#32a244",
   },
 });
 

@@ -18,9 +18,11 @@ const booksReducer = (state = initialState, action) => {
     case actionTypes.INCREASE_BOOK_COUNT:
       return {
         ...state,
-        books: state.books.map((book) => {
-          return { ...book, count: book.count + 1 };
-        }),
+        books: state.books.map((book) =>
+          book.id === action.payload.id && book.title === action.payload.title
+            ? { ...book, count: book.count + 1 }
+            : book
+        ),
       };
     case actionTypes.DECREASE_BOOK_COUNT:
       return {

@@ -20,7 +20,7 @@ import {
 } from "../redux/actions";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 
-const { width, height } = Dimensions.get("window");
+const { width } = Dimensions.get("window");
 
 const QRCodeScannerScreen = () => {
   const dispatch = useDispatch();

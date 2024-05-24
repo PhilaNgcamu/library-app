@@ -6,9 +6,8 @@ import {
   ActivityIndicator,
   Dimensions,
   Modal,
-  TouchableOpacity,
 } from "react-native";
-import { Camera } from "expo-camera";
+import { Camera, CameraView } from "expo-camera";
 import { useDispatch, useSelector } from "react-redux";
 import { useFocusEffect, useNavigation } from "@react-navigation/native";
 import {
@@ -25,10 +24,9 @@ const { width } = Dimensions.get("window");
 const QRCodeScannerScreen = () => {
   const dispatch = useDispatch();
   const navigation = useNavigation();
-  const hasPermission = useSelector((state) => state.books.hasPermission);
-  const cameraKey = useSelector((state) => state.books.cameraKey);
-  const scanned = useSelector((state) => state.books.scanned);
 
+  const scanned = useSelector((state) => state.books.scanned);
+  const hasPermission = useSelector((state) => state.books.hasPermission);
   const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
@@ -36,7 +34,7 @@ const QRCodeScannerScreen = () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       dispatch(setHasPermission(status === "granted"));
     })();
-  }, [dispatch]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -47,6 +45,8 @@ const QRCodeScannerScreen = () => {
   );
 
   const handleBarCodeScanned = ({ data }) => {
+    if (scanned) return;
+
     dispatch(setScanned());
     console.log(data);
 
@@ -54,7 +54,6 @@ const QRCodeScannerScreen = () => {
     console.log("ISBN:", isbn);
 
     dispatch(searchBook(isbn));
-
     setModalVisible(true);
   };
 
@@ -89,16 +88,19 @@ const QRCodeScannerScreen = () => {
   }
 
   if (hasPermission === false) {
-    return <Text>No access to camera</Text>;
+    return (
+      <View style={styles.noPermissionContainer}>
+        <Text>No access to camera</Text>
+      </View>
+    );
   }
 
   return (
     <View style={styles.container}>
-      <Camera
-        key={cameraKey}
+      <CameraView
         style={styles.camera}
-        type={Camera.Constants.Type.back}
-        onBarCodeScanned={scanned ? undefined : handleBarCodeScanned}
+        facing={"back"}
+        onBarcodeScanned={scanned ? undefined : handleBarCodeScanned}
       >
         <View style={styles.overlay}>
           <View style={styles.unfocusedContainer}></View>
@@ -109,7 +111,7 @@ const QRCodeScannerScreen = () => {
           </View>
           <View style={styles.unfocusedContainer}></View>
         </View>
-      </Camera>
+      </CameraView>
 
       <Modal
         animationType="slide"
@@ -208,6 +210,11 @@ const styles = StyleSheet.create({
     backgroundColor: "#32a244",
     paddingVertical: 10,
     borderRadius: 5,
+    alignItems: "center",
+  },
+  noPermissionContainer: {
+    flex: 1,
+    justifyContent: "center",
     alignItems: "center",
   },
 });

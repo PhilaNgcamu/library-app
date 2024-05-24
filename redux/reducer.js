@@ -19,7 +19,7 @@ const booksReducer = (state = initialState, action) => {
       return {
         ...state,
         books: state.books.map((book) =>
-          book.id === action.payload.id && book.title === action.payload.title
+          book.id === action.payload.id
             ? { ...book, count: book.count + 1 }
             : book
         ),

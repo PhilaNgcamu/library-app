@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useMemo } from "react";
 import {
   View,
   Text,
@@ -38,13 +38,33 @@ const BookManagementScreen = () => {
   const books = useSelector((state) => state.books.books);
   const navigation = useNavigation();
 
-  const [filteredBooks, setFilteredBooks] = useState(books);
-  const [sortedBooks, setSortedBooks] = useState(books);
+  const filteredBooks = useMemo(() => {
+    return books.filter((book) => {
+      if (filterBy === "availability") {
+        return book.count > 0;
+      }
+      return true;
+    });
+  }, [books, filterBy]);
 
-  useEffect(() => {
-    handleSort(sortBy);
-    handleFilter(filterBy);
-  }, [books, sortBy, filterBy]);
+  const sortedBooks = useMemo(() => {
+    return [...filteredBooks].sort((a, b) => {
+      if (sortBy === "title") {
+        return a.title.localeCompare(b.title);
+      } else if (sortBy === "author") {
+        return a.author.localeCompare(b.author);
+      } else if (sortBy === "count") {
+        return b.count - a.count;
+      }
+      return 0;
+    });
+  }, [filteredBooks, sortBy]);
+
+  const searchedBooks = useMemo(() => {
+    return sortedBooks.filter((book) =>
+      book.title.toLowerCase().includes(searchQuery.toLowerCase().trim())
+    );
+  }, [sortedBooks, searchQuery]);
 
   const handleViewDetails = (bookId) => {
     navigation.navigate("Book Details", { bookId });
@@ -65,43 +85,16 @@ const BookManagementScreen = () => {
 
   const handleSort = (sortBy) => {
     setSortBy(sortBy);
-    const sorted = [...filteredBooks].sort((a, b) => {
-      if (sortBy === "title") {
-        return a.title.localeCompare(b.title);
-      } else if (sortBy === "author") {
-        return a.author.localeCompare(b.author);
-      } else if (sortBy === "count") {
-        return b.count - a.count;
-      }
-      return 0;
-    });
-    setSortedBooks(sorted);
   };
 
   const handleFilter = (filterBy) => {
     setFilterBy(filterBy);
-    const filtered = books.filter((book) => {
-      if (filterBy === "availability") {
-        return book.count > 0;
-      }
-      return true;
-    });
-    setFilteredBooks(filtered);
-    handleSort(sortBy); // Ensure the filtered list is also sorted
   };
 
   const handleSearch = () => {
-    const filtered = books.filter((book) => {
-      return book.title
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase().trim());
-    });
-
-    if (filtered.length === 0) {
+    if (searchedBooks.length === 0) {
       setShowNoBooksModal(true);
     } else {
-      setFilteredBooks(filtered);
-      setSortedBooks(filtered);
       setSnackbarVisible(true);
       setSnackbarMessage("Search results updated");
     }
@@ -207,7 +200,7 @@ const BookManagementScreen = () => {
         renderEmptyState()
       ) : (
         <FlatList
-          data={sortedBooks.length > 0 ? sortedBooks : filteredBooks}
+          data={searchedBooks}
           renderItem={renderBookItem}
           keyExtractor={(item) => item.id.toString()}
           numColumns={2}

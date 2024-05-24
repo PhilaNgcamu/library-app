@@ -38,6 +38,15 @@ const BookManagementScreen = () => {
   const books = useSelector((state) => state.books.books);
   const navigation = useNavigation();
 
+  const renderEmptyState = () => {
+    return (
+      <View style={styles.emptyStateContainer}>
+        <MaterialIcons name="library-books" size={100} color="black" />
+        <Text style={styles.emptyStateText}>No books available</Text>
+      </View>
+    );
+  };
+
   const filteredBooks = useMemo(() => {
     return books.filter((book) => {
       if (filterBy === "availability") {
@@ -105,12 +114,6 @@ const BookManagementScreen = () => {
     setDropdownVisible(true);
   };
 
-  const handleAddBook = (newBook) => {
-    dispatch(addBook(newBook));
-    setSnackbarMessage("New book added");
-    setSnackbarVisible(true);
-  };
-
   const renderBookItem = ({ item }) => {
     return (
       <TouchableOpacity
@@ -139,15 +142,6 @@ const BookManagementScreen = () => {
           <Text style={styles.bookCount}>Books left: {item.count}</Text>
         </View>
       </TouchableOpacity>
-    );
-  };
-
-  const renderEmptyState = () => {
-    return (
-      <View style={styles.emptyStateContainer}>
-        <MaterialIcons name="library-books" size={100} color="black" />
-        <Text style={styles.emptyStateText}>No books available</Text>
-      </View>
     );
   };
 

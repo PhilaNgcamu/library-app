@@ -79,6 +79,9 @@ const BookManagementScreen = () => {
     navigation.navigate("Book Details", { bookId });
   };
 
+  const allBooksUnavailable =
+    books.length > 0 && books.every((book) => book.count === 0);
+
   const handleDeleteBook = (bookId) => {
     const book = books.find((b) => b.id === bookId);
     if (book.count > 1) {
@@ -189,6 +192,8 @@ const BookManagementScreen = () => {
           </Picker>
         </View>
       </View>
+
+      {allBooksUnavailable && renderEmptyState()}
 
       {books.length === 0 ? (
         renderEmptyState()

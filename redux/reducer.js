@@ -5,6 +5,8 @@ const initialState = {
   scanned: false,
   hasPermission: null,
   cameraKey: 0,
+  storedIsbns: [],
+  bookNotFound: false,
 };
 
 const booksReducer = (state = initialState, action) => {
@@ -13,6 +15,12 @@ const booksReducer = (state = initialState, action) => {
       return {
         ...state,
         books: [...state.books, action.payload],
+      };
+
+    case actionTypes.STORE_BOOK_ISBN:
+      return {
+        ...state,
+        storedIsbns: [...state.storedIsbns, action.payload],
       };
 
     case actionTypes.INCREASE_BOOK_COUNT:

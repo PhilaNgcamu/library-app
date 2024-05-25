@@ -28,6 +28,7 @@ const QRCodeScannerScreen = () => {
   const scanned = useSelector((state) => state.books.scanned);
   const hasPermission = useSelector((state) => state.books.hasPermission);
   const [modalVisible, setModalVisible] = useState(false);
+  const storedIsbns = useSelector((state) => state.books.storedIsbns);
 
   useEffect(() => {
     (async () => {
@@ -70,7 +71,9 @@ const QRCodeScannerScreen = () => {
 
   const handleViewBook = () => {
     setModalVisible(false);
-    navigation.navigate("Home");
+    navigation.navigate("Book Details", {
+      bookId: storedIsbns[storedIsbns.length - 1],
+    });
   };
 
   if (hasPermission === null) {

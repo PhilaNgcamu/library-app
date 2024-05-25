@@ -10,7 +10,7 @@ import { Progress, ProgressFilledTrack } from "@gluestack-ui/themed";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
-const BookOption = ({ book, onPress }) => {
+const BookOption = ({ book, memberName, memberSurname, onPress }) => {
   const borrowedDateObj = new Date(book.borrowedDate);
   const returnDateObj = new Date(book.returnDate);
   const currentDateObj = new Date();
@@ -36,6 +36,9 @@ const BookOption = ({ book, onPress }) => {
       <View style={styles.bookInfo}>
         <Text style={styles.bookTitle}>{truncateTitle(book.title)}</Text>
         <Text style={styles.bookAuthor}>{book.author}</Text>
+        <Text style={styles.bookMember}>
+          Borrowed by: {memberName} {memberSurname}
+        </Text>
       </View>
       <View style={styles.bookProgress}>
         <Progress
@@ -157,11 +160,13 @@ const BorrowingDetailsScreen = ({ route }) => {
         </Progress>
       </View>
 
-      <Text style={styles.optionsTitle}>Current Reads</Text>
+      <Text style={styles.optionsTitle}>Other Current Reads</Text>
       {uniqueOptions.map((option) => (
         <BookOption
           key={option.id}
           book={option}
+          memberName={memberName}
+          memberSurname={memberSurname}
           onPress={() => handleViewBookDetails(option)}
         />
       ))}
@@ -225,6 +230,10 @@ const styles = StyleSheet.create({
   },
   bookAuthor: {
     fontSize: 16,
+  },
+  bookMember: {
+    fontSize: 14,
+    color: "gray",
   },
   bookProgress: {
     alignItems: "flex-end",

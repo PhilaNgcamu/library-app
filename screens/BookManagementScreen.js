@@ -64,6 +64,8 @@ const BookManagementScreen = () => {
         return a.author.localeCompare(b.author);
       } else if (sortBy === "count") {
         return b.count - a.count;
+      } else if (sortBy === "date") {
+        return new Date(b.date) - new Date(a.date);
       }
       return 0;
     });
@@ -179,6 +181,7 @@ const BookManagementScreen = () => {
             <Picker.Item label="Sort By Title" value="title" />
             <Picker.Item label="Sort By Author" value="author" />
             <Picker.Item label="Sort By Count" value="count" />
+            <Picker.Item label="Sort By Date" value="date" />
           </Picker>
         </View>
         <View style={styles.filterContainer}>

@@ -7,6 +7,7 @@ import QRCodeScannerScreen from "./BarcodeScannerScreen";
 import ViewBookScreen from "./ViewBookScreen";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import BorrowingDetailsScreen from "./BorrowingDetailsScreen";
+import UsersScreen from "./UsersScreen"; // Import the new Users screen
 
 const Stack = createStackNavigator();
 
@@ -65,7 +66,7 @@ const TabNavigator = () => {
           headerTitleStyle: {
             fontWeight: "bold",
           },
-          tabBarLabel: "Home",
+          tabBarLabel: "Books",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="book" color={color} size={size} />
           ),
@@ -81,6 +82,19 @@ const TabNavigator = () => {
           tabBarLabel: "Add New Book",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="plus" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Users"
+        component={UsersScreen}
+        options={{
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+          tabBarLabel: "Users",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialCommunityIcons name="account" color={color} size={size} />
           ),
         }}
       />

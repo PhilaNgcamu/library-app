@@ -17,6 +17,16 @@ const booksReducer = (state = initialState, action) => {
         books: [...state.books, action.payload],
       };
 
+    case actionTypes.UPDATE_BOOK_AVAILABILITY:
+      return {
+        ...state,
+        books: state.books.map((book) =>
+          book.id === action.payload.bookId
+            ? { ...book, count: action.payload.count }
+            : book
+        ),
+      };
+
     case actionTypes.STORE_BOOK_ISBN:
       return {
         ...state,

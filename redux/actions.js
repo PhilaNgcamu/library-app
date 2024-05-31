@@ -63,6 +63,11 @@ export const addBook = (book) => ({
   payload: book,
 });
 
+export const updateBookAvailability = (bookId, count) => ({
+  type: actionTypes.UPDATE_BOOK_AVAILABILITY,
+  payload: { bookId, count },
+});
+
 export const storeBookIsbn = (isbn) => ({
   type: actionTypes.STORE_BOOK_ISBN,
   payload: isbn,

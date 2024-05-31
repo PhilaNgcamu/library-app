@@ -14,8 +14,10 @@ import { Button, ButtonText } from "@gluestack-ui/themed";
 import { useDispatch, useSelector } from "react-redux";
 import { Snackbar } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { updateBookAvailability } from "../redux/actions";
 
 const ViewBookScreen = ({ navigation, route }) => {
+  const dispatch = useDispatch();
   const { bookId } = route.params;
   const [isBorrowing, setIsBorrowing] = useState(false);
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -106,6 +108,8 @@ const ViewBookScreen = ({ navigation, route }) => {
     };
     setBorrowedBooks([...borrowedBooks, borrowedBookDetails]);
     setSnackbarVisible(true);
+    const newCount = book.count - 1;
+    dispatch(updateBookAvailability(book.id, newCount));
     closeModal();
   };
 

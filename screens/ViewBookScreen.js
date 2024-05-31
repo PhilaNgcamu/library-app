@@ -200,10 +200,12 @@ const ViewBookScreen = ({ navigation, route }) => {
             <Button
               bgColor="#32a244"
               onPress={handleBorrow}
-              style={styles.button}
+              style={[styles.button, !available && styles.disabledButton]}
               disabled={isBorrowing || !available}
             >
-              <ButtonText>{isBorrowing ? "Borrowing..." : "Borrow"}</ButtonText>
+              <ButtonText style={!available && styles.disabledText}>
+                {isBorrowing ? "Borrowing..." : "Borrow"}
+              </ButtonText>
             </Button>
           </View>
         </View>
@@ -416,6 +418,13 @@ const styles = StyleSheet.create({
   },
   button: {
     marginHorizontal: 10,
+  },
+  disabledButton: {
+    marginHorizontal: 10,
+    opacity: 0.5,
+  },
+  disabledText: {
+    color: "#fff",
   },
   modalContainer: {
     flex: 1,

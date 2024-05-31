@@ -6,8 +6,10 @@ import BookManagementScreen from "./BookManagementScreen";
 import QRCodeScannerScreen from "./BarcodeScannerScreen";
 import ViewBookScreen from "./ViewBookScreen";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
+import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import BorrowingDetailsScreen from "./BorrowingDetailsScreen";
-import UsersScreen from "./UsersScreen"; // Import the new Users screen
+import UsersScreen from "./UsersScreen";
+import GenreScreen from "./GenreScreen";
 
 const Stack = createStackNavigator();
 
@@ -95,6 +97,19 @@ const TabNavigator = () => {
           tabBarLabel: "Users",
           tabBarIcon: ({ color, size }) => (
             <MaterialCommunityIcons name="account" color={color} size={size} />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Categories"
+        component={GenreScreen}
+        options={{
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+          tabBarLabel: "Categories",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="category" color={color} size={size} />
           ),
         }}
       />

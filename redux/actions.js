@@ -114,7 +114,7 @@ export const sortByKey = (key) => ({
   payload: key,
 });
 
-export const filterBy = (key) => ({
+export const filterByKey = (key) => ({
   type: actionTypes.FILTER_BY,
   payload: key,
 });

@@ -87,7 +87,8 @@ const BookManagementScreen = () => {
   };
 
   const allBooksUnavailable =
-    books.length > 0 && books.every((book) => book.count === 0);
+    filterBy === "availability" &&
+    filteredBooks.every((book) => book.count === 0);
 
   const handleDeleteBook = (bookId) => {
     const book = books.find((b) => b.id === bookId);

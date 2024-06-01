@@ -21,6 +21,7 @@ import {
   decreaseBookCount,
   filterByKey,
   searchQueryKeyword,
+  setSnackbarVisible,
   showNoBooksModal,
   sortByKey,
 } from "../redux/actions";
@@ -30,7 +31,7 @@ const BookManagementScreen = () => {
   const filterBy = useSelector((state) => state.books.filterBy);
   const searchQuery = useSelector((state) => state.books.searchQuery);
   const noBooksModal = useSelector((state) => state.books.showNoBooksModal);
-  const [snackbarVisible, setSnackbarVisible] = useState(false);
+  const snackbarVisible = useSelector((state) => state.books.snackbarVisible);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const [dropdownVisible, setDropdownVisible] = useState(false);
@@ -96,7 +97,7 @@ const BookManagementScreen = () => {
       setSnackbarMessage("Book marked as Not Available");
     }
     setDropdownVisible(false);
-    setSnackbarVisible(true);
+    dispatch(setSnackbarVisible(true));
   };
 
   const handleSort = (sortBy) => {
@@ -111,7 +112,7 @@ const BookManagementScreen = () => {
     if (searchedBooks.length === 0) {
       dispatch(showNoBooksModal(true));
     } else {
-      setSnackbarVisible(true);
+      dispatch(setSnackbarVisible(true));
       setSnackbarMessage("Search results updated");
     }
   };
@@ -281,11 +282,11 @@ const BookManagementScreen = () => {
       <Snackbar
         visible={snackbarVisible}
         style={{ backgroundColor: "#32a244" }}
-        onDismiss={() => setSnackbarVisible(false)}
+        onDismiss={() => dispatch(setSnackbarVisible(false))}
         duration={2000}
         action={{
           textColor: "white",
-          onPress: () => setSnackbarVisible(false),
+          onPress: () => dispatch(setSnackbarVisible(false)),
         }}
       >
         {snackbarMessage}

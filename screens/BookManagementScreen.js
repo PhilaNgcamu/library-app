@@ -21,6 +21,7 @@ import {
   decreaseBookCount,
   filterByKey,
   searchQueryKeyword,
+  showNoBooksModal,
   sortByKey,
 } from "../redux/actions";
 
@@ -28,8 +29,7 @@ const BookManagementScreen = () => {
   const sortBy = useSelector((state) => state.books.sortBy);
   const filterBy = useSelector((state) => state.books.filterBy);
   const searchQuery = useSelector((state) => state.books.searchQuery);
-
-  const [showNoBooksModal, setShowNoBooksModal] = useState(false);
+  const noBooksModal = useSelector((state) => state.books.showNoBooksModal);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
 
@@ -109,7 +109,7 @@ const BookManagementScreen = () => {
 
   const handleSearch = () => {
     if (searchedBooks.length === 0) {
-      setShowNoBooksModal(true);
+      dispatch(showNoBooksModal(true));
     } else {
       setSnackbarVisible(true);
       setSnackbarMessage("Search results updated");
@@ -253,8 +253,8 @@ const BookManagementScreen = () => {
       <Modal
         animationType="slide"
         transparent={true}
-        visible={showNoBooksModal}
-        onRequestClose={() => setShowNoBooksModal(false)}
+        visible={noBooksModal}
+        onRequestClose={() => dispatch(showNoBooksModal())}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
@@ -270,7 +270,7 @@ const BookManagementScreen = () => {
             <Text style={styles.modalText}>No books found</Text>
             <Button
               style={styles.modalButton}
-              onPress={() => setShowNoBooksModal(false)}
+              onPress={() => dispatch(showNoBooksModal())}
             >
               <ButtonText>Search Again</ButtonText>
             </Button>

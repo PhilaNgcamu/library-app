@@ -108,3 +108,42 @@ export const incrementCameraKey = () => ({
 export const isScanModalVisible = () => ({
   type: actionTypes.SCAN_MODAL_VISIBLE,
 });
+
+export const sortByKey = (key) => ({
+  type: actionTypes.SORT_BY,
+  payload: key,
+});
+
+export const filterBy = (key) => ({
+  type: actionTypes.FILTER_BY,
+  payload: key,
+});
+
+export const searchQuery = (query) => ({
+  type: actionTypes.SEARCH_QUERY,
+  payload: query,
+});
+
+export const showNoBooksModal = () => ({
+  type: actionTypes.SHOW_NO_BOOKS_MODAL,
+});
+
+export const setSnackbarVisible = (visible) => ({
+  type: actionTypes.SET_SNACKBAR_VISIBLE,
+  payload: visible,
+});
+
+export const setSnackbarMessage = (message) => ({
+  type: actionTypes.SET_SNACKBAR_MESSAGE,
+  payload: message,
+});
+
+export const setDropdownVisible = (visible) => ({
+  type: actionTypes.SET_DROPDOWN_VISIBLE,
+  payload: visible,
+});
+
+export const setSelectedBook = (book) => ({
+  type: actionTypes.SET_SELECTED_BOOK,
+  payload: book,
+});

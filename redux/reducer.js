@@ -1,4 +1,5 @@
 import actionTypes from "./actionTypes";
+import { sortBy } from "./actions";
 
 const initialState = {
   books: [],
@@ -8,6 +9,14 @@ const initialState = {
   storedIsbns: [],
   bookNotFound: false,
   modalVisible: false,
+  sortBy: "title",
+  filterBy: "all",
+  searchQuery: "",
+  showNoBooksModal: false,
+  snackbarVisible: false,
+  snackbarMessage: "",
+  dropdownVisible: false,
+  selectedBook: null,
 };
 
 const booksReducer = (state = initialState, action) => {
@@ -87,6 +96,54 @@ const booksReducer = (state = initialState, action) => {
       return {
         ...state,
         modalVisible: !state.modalVisible,
+      };
+
+    case actionTypes.SORT_BY:
+      return {
+        ...state,
+        sortBy: action.payload,
+      };
+
+    case actionTypes.FILTER_BY:
+      return {
+        ...state,
+        filterBy: action.payload,
+      };
+
+    case actionTypes.SEARCH_QUERY:
+      return {
+        ...state,
+        searchQuery: action.payload,
+      };
+
+    case actionTypes.SHOW_NO_BOOKS_MODAL:
+      return {
+        ...state,
+        showNoBooksModal: !state.showNoBooksModal,
+      };
+
+    case actionTypes.SET_SNACKBAR_VISIBLE:
+      return {
+        ...state,
+        snackbarVisible: action.payload,
+      };
+
+    case actionTypes.SET_SNACKBAR_MESSAGE:
+      return {
+        ...state,
+        snackbarMessage: action.payload,
+      };
+
+    case actionTypes.SET_DROPDOWN_VISIBLE:
+      return {
+        ...state,
+        dropdownVisible: action.payload,
+      };
+
+    case actionTypes.SET_SELECTED_BOOK:
+      return {
+        ...state,
+        selectedBook: action.payload,
       };
 
     default:

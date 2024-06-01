@@ -17,13 +17,15 @@ import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
-import { addBook, decreaseBookCount } from "../redux/actions";
+import { decreaseBookCount, sortByKey } from "../redux/actions";
 
 const BookManagementScreen = () => {
   const defaultSortBy = "title";
   const defaultFilterBy = "all";
 
-  const [sortBy, setSortBy] = useState(defaultSortBy);
+  // const [sortBy, sortByKey] = useState(defaultSortBy);
+  const sortBy = useSelector((state) => state.books.sortBy);
+
   const [filterBy, setFilterBy] = useState(defaultFilterBy);
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -98,7 +100,7 @@ const BookManagementScreen = () => {
   };
 
   const handleSort = (sortBy) => {
-    setSortBy(sortBy);
+    dispatch(sortByKey(sortBy));
   };
 
   const handleFilter = (filterBy) => {

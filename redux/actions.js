@@ -104,3 +104,7 @@ export const setHasPermission = (hasPermission) => ({
 export const incrementCameraKey = () => ({
   type: actionTypes.INCREMENT_CAMERA_KEY,
 });
+
+export const isModalVisible = () => ({
+  type: actionTypes.MODAL_VISIBLE,
+});

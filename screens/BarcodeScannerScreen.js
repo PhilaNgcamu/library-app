@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect } from "react";
 import {
   Text,
   View,
@@ -16,6 +16,7 @@ import {
   resetScanned,
   setHasPermission,
   incrementCameraKey,
+  isModalVisible,
 } from "../redux/actions";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 
@@ -27,7 +28,8 @@ const QRCodeScannerScreen = () => {
 
   const scanned = useSelector((state) => state.books.scanned);
   const hasPermission = useSelector((state) => state.books.hasPermission);
-  const [modalVisible, setModalVisible] = useState(false);
+  const modalVisible = useSelector((state) => state.books.modalVisible);
+
   const storedIsbns = useSelector((state) => state.books.storedIsbns);
 
   useEffect(() => {
@@ -55,7 +57,7 @@ const QRCodeScannerScreen = () => {
     console.log("ISBN:", isbn);
 
     dispatch(searchBook(isbn));
-    setModalVisible(true);
+    dispatch(isModalVisible());
   };
 
   const extractISBN = (qrCodeData) => {
@@ -65,12 +67,12 @@ const QRCodeScannerScreen = () => {
   };
 
   const handleScanAgain = () => {
-    setModalVisible(false);
+    dispatch(isModalVisible());
     dispatch(resetScanned());
   };
 
   const handleViewBook = () => {
-    setModalVisible(false);
+    dispatch(isModalVisible());
     navigation.navigate("Book Details", {
       bookId: storedIsbns[storedIsbns.length - 1],
     });
@@ -120,7 +122,7 @@ const QRCodeScannerScreen = () => {
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => setModalVisible(false)}
+        onRequestClose={() => dispatch(isModalVisible())}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>

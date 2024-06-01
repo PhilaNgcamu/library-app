@@ -7,6 +7,7 @@ const initialState = {
   cameraKey: 0,
   storedIsbns: [],
   bookNotFound: false,
+  modalVisible: false,
 };
 
 const booksReducer = (state = initialState, action) => {
@@ -80,6 +81,12 @@ const booksReducer = (state = initialState, action) => {
       return {
         ...state,
         cameraKey: state.cameraKey + 1,
+      };
+
+    case actionTypes.MODAL_VISIBLE:
+      return {
+        ...state,
+        modalVisible: !state.modalVisible,
       };
 
     default:

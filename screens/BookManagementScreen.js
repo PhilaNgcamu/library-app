@@ -21,6 +21,8 @@ import {
   decreaseBookCount,
   filterByKey,
   searchQueryKeyword,
+  setDropdownVisible,
+  setSelectedBook,
   setSnackbarMessage,
   setSnackbarVisible,
   showNoBooksModal,
@@ -34,10 +36,8 @@ const BookManagementScreen = () => {
   const noBooksModal = useSelector((state) => state.books.showNoBooksModal);
   const snackbarVisible = useSelector((state) => state.books.snackbarVisible);
   const snackbarMessage = useSelector((state) => state.books.snackbarMessage);
-  // const [snackbarMessage, setSnackbarMessage] = useState("");
-
-  const [dropdownVisible, setDropdownVisible] = useState(false);
-  const [selectedBook, setSelectedBook] = useState(null);
+  const dropdownVisible = useSelector((state) => state.books.dropdownVisible);
+  const selectedBook = useSelector((state) => state.books.selectedBook);
 
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.books);
@@ -98,7 +98,7 @@ const BookManagementScreen = () => {
       dispatch(decreaseBookCount(bookId));
       dispatch(setSnackbarMessage("Book marked as Not Available"));
     }
-    setDropdownVisible(false);
+    dispatch(setDropdownVisible(false));
     dispatch(setSnackbarVisible(true));
   };
 
@@ -120,8 +120,8 @@ const BookManagementScreen = () => {
   };
 
   const handleLongPress = (book) => {
-    setSelectedBook(book);
-    setDropdownVisible(true);
+    dispatch(setSelectedBook(book));
+    dispatch(setDropdownVisible(true));
   };
 
   const renderBookItem = ({ item }) => {
@@ -222,16 +222,18 @@ const BookManagementScreen = () => {
         animationType="slide"
         transparent={true}
         visible={dropdownVisible}
-        onRequestClose={() => setDropdownVisible(false)}
+        onRequestClose={() => dispatch(setDropdownVisible(false))}
       >
-        <TouchableWithoutFeedback onPress={() => setDropdownVisible(false)}>
+        <TouchableWithoutFeedback
+          onPress={() => dispatch(setDropdownVisible(false))}
+        >
           <View style={styles.modalOverlay}>
             <View style={styles.dropdown}>
               <TouchableOpacity
                 style={styles.dropdownItem}
                 onPress={() => {
                   handleViewDetails(selectedBook.id);
-                  setDropdownVisible(false);
+                  dispatch(setDropdownVisible(false));
                 }}
               >
                 <Text style={styles.dropdownItemText}>View Details</Text>
@@ -241,7 +243,7 @@ const BookManagementScreen = () => {
                 style={styles.dropdownItem}
                 onPress={() => {
                   handleDeleteBook(selectedBook.id);
-                  setDropdownVisible(false);
+                  dispatch(setDropdownVisible(false));
                 }}
               >
                 <Text style={(styles.dropdownItemText, { color: "red" })}>

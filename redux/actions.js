@@ -119,7 +119,7 @@ export const filterByKey = (key) => ({
   payload: key,
 });
 
-export const searchQuery = (query) => ({
+export const searchQueryKeyword = (query) => ({
   type: actionTypes.SEARCH_QUERY,
   payload: query,
 });

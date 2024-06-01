@@ -17,13 +17,17 @@ import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
-import { decreaseBookCount, filterByKey, sortByKey } from "../redux/actions";
+import {
+  decreaseBookCount,
+  filterByKey,
+  searchQueryKeyword,
+  sortByKey,
+} from "../redux/actions";
 
 const BookManagementScreen = () => {
-  const defaultFilterBy = "all";
   const sortBy = useSelector((state) => state.books.sortBy);
   const filterBy = useSelector((state) => state.books.filterBy);
-  const [searchQuery, setSearchQuery] = useState("");
+  const searchQuery = useSelector((state) => state.books.searchQuery);
 
   const [showNoBooksModal, setShowNoBooksModal] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
@@ -155,7 +159,9 @@ const BookManagementScreen = () => {
           style={styles.searchInput}
           placeholder="Search books..."
           value={searchQuery}
-          onChangeText={setSearchQuery}
+          onChangeText={(search) => {
+            dispatch(searchQueryKeyword(search));
+          }}
           onSubmitEditing={handleSearch}
         />
         <Button

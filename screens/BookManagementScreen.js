@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useMemo } from "react";
 import {
   View,
   Text,
@@ -204,9 +204,9 @@ const BookManagementScreen = () => {
         </View>
       </View>
 
-      {allBooksUnavailable && renderEmptyState()}
-
-      {books.length === 0 ? (
+      {books.length === 0 ||
+      searchedBooks.length === 0 ||
+      allBooksUnavailable ? (
         renderEmptyState()
       ) : (
         <FlatList

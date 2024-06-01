@@ -38,9 +38,9 @@ const BookManagementScreen = () => {
   const snackbarMessage = useSelector((state) => state.books.snackbarMessage);
   const dropdownVisible = useSelector((state) => state.books.dropdownVisible);
   const selectedBook = useSelector((state) => state.books.selectedBook);
+  const books = useSelector((state) => state.books.books);
 
   const dispatch = useDispatch();
-  const books = useSelector((state) => state.books.books);
   const navigation = useNavigation();
 
   const renderEmptyState = () => {

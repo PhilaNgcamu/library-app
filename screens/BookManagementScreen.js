@@ -21,6 +21,7 @@ import {
   decreaseBookCount,
   filterByKey,
   searchQueryKeyword,
+  setSnackbarMessage,
   setSnackbarVisible,
   showNoBooksModal,
   sortByKey,
@@ -32,7 +33,8 @@ const BookManagementScreen = () => {
   const searchQuery = useSelector((state) => state.books.searchQuery);
   const noBooksModal = useSelector((state) => state.books.showNoBooksModal);
   const snackbarVisible = useSelector((state) => state.books.snackbarVisible);
-  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const snackbarMessage = useSelector((state) => state.books.snackbarMessage);
+  // const [snackbarMessage, setSnackbarMessage] = useState("");
 
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [selectedBook, setSelectedBook] = useState(null);
@@ -91,10 +93,10 @@ const BookManagementScreen = () => {
     const book = books.find((b) => b.id === bookId);
     if (book.count > 1) {
       dispatch(decreaseBookCount(bookId));
-      setSnackbarMessage(`${book.count - 1} book(s) left`);
+      dispatch(setSnackbarMessage(`${book.count - 1} book(s) left`));
     } else if (book.count === 1) {
       dispatch(decreaseBookCount(bookId));
-      setSnackbarMessage("Book marked as Not Available");
+      dispatch(setSnackbarMessage("Book marked as Not Available"));
     }
     setDropdownVisible(false);
     dispatch(setSnackbarVisible(true));
@@ -113,7 +115,7 @@ const BookManagementScreen = () => {
       dispatch(showNoBooksModal(true));
     } else {
       dispatch(setSnackbarVisible(true));
-      setSnackbarMessage("Search results updated");
+      dispatch(setSnackbarMessage("Search results updated"));
     }
   };
 

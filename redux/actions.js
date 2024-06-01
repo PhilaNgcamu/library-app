@@ -105,6 +105,6 @@ export const incrementCameraKey = () => ({
   type: actionTypes.INCREMENT_CAMERA_KEY,
 });
 
-export const isModalVisible = () => ({
-  type: actionTypes.MODAL_VISIBLE,
+export const isScanModalVisible = () => ({
+  type: actionTypes.SCAN_MODAL_VISIBLE,
 });

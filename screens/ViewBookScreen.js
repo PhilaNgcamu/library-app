@@ -20,7 +20,7 @@ const ViewBookScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   const { bookId } = route.params;
   const [isBorrowing, setIsBorrowing] = useState(false);
-  const [isModalVisible, setIsModalVisible] = useState(false);
+  const [isScanModalVisible, setisScanModalVisible] = useState(false);
   const [snackbarVisible, setSnackbarVisible] = useState(false);
   const [showFullDescription, setShowFullDescription] = useState(false);
   const [memberName, setMemberName] = useState("");
@@ -55,11 +55,11 @@ const ViewBookScreen = ({ navigation, route }) => {
 
   const handleBorrow = () => {
     setIsBorrowing(true);
-    setIsModalVisible(true);
+    setisScanModalVisible(true);
   };
 
   const closeModal = () => {
-    setIsModalVisible(false);
+    setisScanModalVisible(false);
     setIsBorrowing(false);
     setMemberNameError("");
     setMemberSurnameError("");
@@ -212,7 +212,7 @@ const ViewBookScreen = ({ navigation, route }) => {
         <Modal
           animationType="fade"
           transparent={true}
-          visible={isModalVisible}
+          visible={isScanModalVisible}
           onRequestClose={closeModal}
         >
           <View style={styles.modalContainer}>
@@ -340,7 +340,7 @@ const ViewBookScreen = ({ navigation, route }) => {
       </ScrollView>
 
       <Snackbar
-        visible={snackbarVisible && !isModalVisible}
+        visible={snackbarVisible && !isScanModalVisible}
         style={styles.snackbar}
         onDismiss={() => {
           setIsBorrowing(false);

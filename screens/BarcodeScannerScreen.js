@@ -16,7 +16,7 @@ import {
   resetScanned,
   setHasPermission,
   incrementCameraKey,
-  isModalVisible,
+  isScanModalVisible,
 } from "../redux/actions";
 import { Button, ButtonText } from "@gluestack-ui/themed";
 
@@ -57,7 +57,7 @@ const QRCodeScannerScreen = () => {
     console.log("ISBN:", isbn);
 
     dispatch(searchBook(isbn));
-    dispatch(isModalVisible());
+    dispatch(isScanModalVisible());
   };
 
   const extractISBN = (qrCodeData) => {
@@ -67,12 +67,12 @@ const QRCodeScannerScreen = () => {
   };
 
   const handleScanAgain = () => {
-    dispatch(isModalVisible());
+    dispatch(isScanModalVisible());
     dispatch(resetScanned());
   };
 
   const handleViewBook = () => {
-    dispatch(isModalVisible());
+    dispatch(isScanModalVisible());
     navigation.navigate("Book Details", {
       bookId: storedIsbns[storedIsbns.length - 1],
     });
@@ -122,7 +122,7 @@ const QRCodeScannerScreen = () => {
         animationType="slide"
         transparent={true}
         visible={modalVisible}
-        onRequestClose={() => dispatch(isModalVisible())}
+        onRequestClose={() => dispatch(isScanModalVisible())}
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>

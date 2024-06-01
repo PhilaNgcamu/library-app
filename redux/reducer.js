@@ -83,7 +83,7 @@ const booksReducer = (state = initialState, action) => {
         cameraKey: state.cameraKey + 1,
       };
 
-    case actionTypes.MODAL_VISIBLE:
+    case actionTypes.SCAN_MODAL_VISIBLE:
       return {
         ...state,
         modalVisible: !state.modalVisible,

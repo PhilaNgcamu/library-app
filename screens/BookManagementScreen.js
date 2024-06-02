@@ -1,14 +1,15 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useRef } from "react";
 import {
   View,
   Text,
   StyleSheet,
-  FlatList,
   Image,
   TouchableOpacity,
   TextInput,
   Modal,
   TouchableWithoutFeedback,
+  FlatList,
+  Animated,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
@@ -16,7 +17,7 @@ import { Button, ButtonText } from "@gluestack-ui/themed";
 import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
-import { AnimatedFAB, FAB, Snackbar } from "react-native-paper";
+import { AnimatedFAB, Snackbar } from "react-native-paper";
 import {
   decreaseBookCount,
   fetchBooks,
@@ -42,9 +43,12 @@ const BookManagementScreen = () => {
   const books = useSelector((state) => state.books.books);
 
   const [fabVisible, setFabVisible] = useState(true);
+  const [isExtended, setIsExtended] = useState(true);
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
+
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     dispatch(fetchBooks());
@@ -169,6 +173,14 @@ const BookManagementScreen = () => {
     );
   };
 
+  const onScroll = ({ nativeEvent }) => {
+    const currentScrollPosition =
+      Math.floor(nativeEvent?.contentOffset?.y) ?? 0;
+    setIsExtended(currentScrollPosition <= 0);
+  };
+
+  const fabStyle = { bottom: 16 };
+
   return (
     <View style={styles.container}>
       <View style={styles.searchContainer}>
@@ -229,6 +241,7 @@ const BookManagementScreen = () => {
           numColumns={2}
           contentContainerStyle={styles.bookList}
           extraData={books}
+          onScroll={onScroll}
         />
       )}
 
@@ -310,12 +323,10 @@ const BookManagementScreen = () => {
         {snackbarMessage}
       </Snackbar>
       <AnimatedFAB
-        style={styles.fab}
+        style={[styles.fab, fabStyle]}
         label="Add New Book"
-        extended
-        iconColor="#fff"
+        extended={isExtended}
         icon="plus"
-        visible={fabVisible}
         onPress={handleAddVisitor}
       />
     </View>
@@ -469,9 +480,7 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     backgroundColor: "#32a244",
-    margin: 16,
-    right: 0,
-    bottom: 0,
+    right: 16,
   },
 });
 

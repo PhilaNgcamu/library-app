@@ -105,6 +105,8 @@ const BookManagementScreen = () => {
     } else if (book.count === 1) {
       dispatch(decreaseBookCount(bookId));
       dispatch(setSnackbarMessage("Book marked as Not Available"));
+    } else {
+      dispatch(setSnackbarMessage("Book marked as Not Available"));
     }
     dispatch(setDropdownVisible(false));
     dispatch(setSnackbarVisible(true));
@@ -297,7 +299,7 @@ const BookManagementScreen = () => {
 
       <Snackbar
         visible={snackbarVisible}
-        style={{ backgroundColor: "#32a244" }}
+        style={{ backgroundColor: "#32a244", zIndex: 1 }}
         onDismiss={() => dispatch(setSnackbarVisible(false))}
         duration={2000}
         action={{

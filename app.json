@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "library-app",
+    "name": "MBC",
     "slug": "library-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -19,6 +19,7 @@
       "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "foregroundImage": "./assets/mbc-logo.png",
+        "resizeMode": "contain",
         "backgroundColor": "#ffffff"
       },
 

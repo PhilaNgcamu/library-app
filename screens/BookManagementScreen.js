@@ -312,7 +312,6 @@ const BookManagementScreen = () => {
         label="Add New Book"
         extended
         iconColor="#fff"
-        onPress={() => setFabVisible(!fabVisible)}
         icon="plus"
         visible={fabVisible}
         onPress={handleAddVisitor}
@@ -468,7 +467,6 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     backgroundColor: "#32a244",
-    color: "#fff",
     margin: 16,
     right: 0,
     bottom: 0,

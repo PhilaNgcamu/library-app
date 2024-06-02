@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 import {
   View,
   Text,
@@ -19,6 +19,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { Snackbar } from "react-native-paper";
 import {
   decreaseBookCount,
+  fetchBooks,
   filterByKey,
   searchQueryKeyword,
   setDropdownVisible,
@@ -42,6 +43,10 @@ const BookManagementScreen = () => {
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
+
+  useEffect(() => {
+    dispatch(fetchBooks());
+  }, [dispatch]);
 
   const renderEmptyState = () => {
     return (

@@ -1,4 +1,4 @@
-import { ref, set, update } from "firebase/database";
+import { ref, set, get, update } from "firebase/database";
 import actionTypes from "./actionTypes";
 import { database } from "../backend/firestoreConfig";
 
@@ -41,19 +41,23 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
         };
 
         const existingBook = getState().books.books.find(
-          (b) => b.id === isbn || (b.title === title && b.author === authors[0])
+          (b) => b.title === title && b.author === book.author
         );
 
         if (existingBook) {
-          dispatch(increaseBookCount(isbn));
+          const newCount = existingBook.count + 1;
+          const bookRef = ref(database, `books/${existingBook.id}`);
+          await update(bookRef, { count: newCount });
+          dispatch({
+            type: actionTypes.INCREASE_BOOK_COUNT,
+            payload: { id: existingBook.id },
+          });
         } else {
+          const bookRef = ref(database, `books/${isbn}`);
+          await set(bookRef, book);
           dispatch(storeBookIsbn(isbn));
           dispatch(addBook(book));
         }
-
-        // Store book in Firebase
-        const newBookRef = ref(database, `books/${isbn}`);
-        await set(newBookRef, book);
       } else {
         console.log("Book not found");
       }
@@ -67,6 +71,30 @@ export const addBook = (book) => ({
   type: actionTypes.ADD_BOOK,
   payload: book,
 });
+
+export const fetchBooks = () => {
+  return async (dispatch) => {
+    try {
+      const booksRef = ref(database, "books");
+      const snapshot = await get(booksRef);
+
+      if (snapshot.exists()) {
+        const books = snapshot.val();
+        const booksArray = Object.keys(books).map((key) => ({
+          id: key,
+          ...books[key],
+        }));
+
+        dispatch({
+          type: actionTypes.SET_BOOKS,
+          payload: booksArray,
+        });
+      }
+    } catch (error) {
+      console.error("Error fetching books:", error);
+    }
+  };
+};
 
 export const updateBookAvailability = (bookId, count) => {
   return async (dispatch) => {
@@ -113,8 +141,9 @@ export const decreaseBookCount = (id) => {
       const book = getState().books.books.find((b) => b.id === id);
       if (book && book.count > 0) {
         const newCount = book.count - 1;
+        const available = newCount > 0;
         const bookRef = ref(database, `books/${id}`);
-        await update(bookRef, { count: newCount });
+        await update(bookRef, { count: newCount, available });
         dispatch({
           type: actionTypes.DECREASE_BOOK_COUNT,
           payload: { id },

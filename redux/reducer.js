@@ -1,5 +1,4 @@
 import actionTypes from "./actionTypes";
-import { sortBy } from "./actions";
 
 const initialState = {
   books: [],
@@ -52,6 +51,7 @@ const booksReducer = (state = initialState, action) => {
             : book
         ),
       };
+
     case actionTypes.DECREASE_BOOK_COUNT:
       return {
         ...state,

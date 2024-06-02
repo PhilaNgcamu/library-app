@@ -16,13 +16,21 @@
       "supportsTablet": true
     },
     "android": {
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/mbc-logo.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+
+      "package": "com.philangcamu.libraryapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "5b726692-9fb6-438c-a1d1-f368d2a4d629"
+      }
     }
   }
 }

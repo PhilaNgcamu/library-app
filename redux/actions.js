@@ -1,4 +1,6 @@
+import { ref, set, update } from "firebase/database";
 import actionTypes from "./actionTypes";
+import { database } from "../backend/firestoreConfig";
 
 export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
   return async (dispatch, getState) => {
@@ -28,7 +30,7 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
           id: isbn,
           title,
           author: authors ? authors[0] : "Unknown",
-          genre: categories ? categories[0] : "Unknown",
+          genre: categories ? categories[0] : "Others",
           coverUrl,
           description,
           pageCount: pageCount || "N/A",
@@ -46,9 +48,12 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
           dispatch(increaseBookCount(isbn));
         } else {
           dispatch(storeBookIsbn(isbn));
-
           dispatch(addBook(book));
         }
+
+        // Store book in Firebase
+        const newBookRef = ref(database, `books/${isbn}`);
+        await set(newBookRef, book);
       } else {
         console.log("Book not found");
       }
@@ -63,30 +68,78 @@ export const addBook = (book) => ({
   payload: book,
 });
 
-export const updateBookAvailability = (bookId, count) => ({
-  type: actionTypes.UPDATE_BOOK_AVAILABILITY,
-  payload: { bookId, count },
-});
+export const updateBookAvailability = (bookId, count) => {
+  return async (dispatch) => {
+    try {
+      const bookRef = ref(database, `books/${bookId}`);
+      await update(bookRef, { count });
+      dispatch({
+        type: actionTypes.UPDATE_BOOK_AVAILABILITY,
+        payload: { bookId, count },
+      });
+    } catch (error) {
+      console.error("Error updating book availability:", error);
+    }
+  };
+};
 
 export const storeBookIsbn = (isbn) => ({
   type: actionTypes.STORE_BOOK_ISBN,
   payload: isbn,
 });
 
-export const increaseBookCount = (id) => ({
-  type: actionTypes.INCREASE_BOOK_COUNT,
-  payload: { id },
-});
+export const increaseBookCount = (id) => {
+  return async (dispatch, getState) => {
+    try {
+      const book = getState().books.books.find((b) => b.id === id);
+      if (book) {
+        const newCount = book.count + 1;
+        const bookRef = ref(database, `books/${id}`);
+        await update(bookRef, { count: newCount });
+        dispatch({
+          type: actionTypes.INCREASE_BOOK_COUNT,
+          payload: { id },
+        });
+      }
+    } catch (error) {
+      console.error("Error increasing book count:", error);
+    }
+  };
+};
 
-export const decreaseBookCount = (id) => ({
-  type: actionTypes.DECREASE_BOOK_COUNT,
-  payload: { id },
-});
+export const decreaseBookCount = (id) => {
+  return async (dispatch, getState) => {
+    try {
+      const book = getState().books.books.find((b) => b.id === id);
+      if (book && book.count > 0) {
+        const newCount = book.count - 1;
+        const bookRef = ref(database, `books/${id}`);
+        await update(bookRef, { count: newCount });
+        dispatch({
+          type: actionTypes.DECREASE_BOOK_COUNT,
+          payload: { id },
+        });
+      }
+    } catch (error) {
+      console.error("Error decreasing book count:", error);
+    }
+  };
+};
 
-export const deleteBook = (id) => ({
-  type: actionTypes.DELETE_BOOK,
-  payload: { id },
-});
+export const deleteBook = (id) => {
+  return async (dispatch) => {
+    try {
+      const bookRef = ref(database, `books/${id}`);
+      await set(bookRef, null);
+      dispatch({
+        type: actionTypes.DELETE_BOOK,
+        payload: { id },
+      });
+    } catch (error) {
+      console.error("Error deleting book:", error);
+    }
+  };
+};
 
 export const setScanned = () => ({
   type: actionTypes.SET_SCANNED,

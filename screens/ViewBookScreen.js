@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { ref, push } from "firebase/database";
 import {
   View,
   Text,
@@ -15,6 +16,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { Snackbar } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { updateBookAvailability } from "../redux/actions";
+import { database } from "../backend/firestoreConfig";
 
 const ViewBookScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
@@ -102,7 +104,10 @@ const ViewBookScreen = ({ navigation, route }) => {
     const borrowedBookDetails = {
       memberName: memberName,
       memberSurname: memberSurname,
-      book: book,
+      book: {
+        title: book.title,
+        author: book.author,
+      },
       borrowedDate: borrowedDate,
       returnDate: returnDate,
     };
@@ -110,6 +115,9 @@ const ViewBookScreen = ({ navigation, route }) => {
     setSnackbarVisible(true);
     const newCount = book.count - 1;
     dispatch(updateBookAvailability(book.id, newCount));
+
+    const borrowedBooksRef = ref(database, "borrowedBooks");
+    push(borrowedBooksRef, borrowedBookDetails);
     closeModal();
   };
 

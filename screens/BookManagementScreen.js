@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -16,7 +16,7 @@ import { Button, ButtonText } from "@gluestack-ui/themed";
 import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
-import { Snackbar } from "react-native-paper";
+import { AnimatedFAB, FAB, Snackbar } from "react-native-paper";
 import {
   decreaseBookCount,
   fetchBooks,
@@ -40,6 +40,8 @@ const BookManagementScreen = () => {
   const dropdownVisible = useSelector((state) => state.books.dropdownVisible);
   const selectedBook = useSelector((state) => state.books.selectedBook);
   const books = useSelector((state) => state.books.books);
+
+  const [fabVisible, setFabVisible] = useState(true);
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -128,6 +130,10 @@ const BookManagementScreen = () => {
   const handleLongPress = (book) => {
     dispatch(setSelectedBook(book));
     dispatch(setDropdownVisible(true));
+  };
+
+  const handleAddVisitor = () => {
+    navigation.navigate("Scan QR Code");
   };
 
   const renderBookItem = ({ item }) => {
@@ -301,6 +307,16 @@ const BookManagementScreen = () => {
       >
         {snackbarMessage}
       </Snackbar>
+      <AnimatedFAB
+        style={styles.fab}
+        label="Add New Book"
+        extended
+        iconColor="#fff"
+        onPress={() => setFabVisible(!fabVisible)}
+        icon="plus"
+        visible={fabVisible}
+        onPress={handleAddVisitor}
+      />
     </View>
   );
 };
@@ -448,6 +464,14 @@ const styles = StyleSheet.create({
     backgroundColor: "#32a244",
     padding: 10,
     borderRadius: 5,
+  },
+  fab: {
+    position: "absolute",
+    backgroundColor: "#32a244",
+    color: "#fff",
+    margin: 16,
+    right: 0,
+    bottom: 0,
   },
 });
 

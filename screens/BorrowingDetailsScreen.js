@@ -76,35 +76,7 @@ const BorrowingDetailsScreen = ({ route }) => {
     available: true,
   };
 
-  const options = [
-    {
-      id: 1,
-      title: "Book Title 1",
-      author: "Author 1",
-      borrowedDate: borrowedDateObj.toISOString(),
-      returnDate: returnDateObj.toISOString(),
-      coverUrl: "https://example.com/book1.jpg",
-      available: true,
-    },
-    {
-      id: 2,
-      title: "Book Title 2",
-      author: "Author 2",
-      borrowedDate: borrowedDateObj.toISOString(),
-      returnDate: returnDateObj.toISOString(),
-      coverUrl: "https://example.com/book2.jpg",
-      available: true,
-    },
-    {
-      id: 3,
-      title: "Book Title 3",
-      author: "Author 3",
-      borrowedDate: borrowedDateObj.toISOString(),
-      returnDate: returnDateObj.toISOString(),
-      coverUrl: "https://example.com/book3.jpg",
-      available: true,
-    },
-  ];
+  const options = [];
 
   const uniqueOptions = [
     currentBook,

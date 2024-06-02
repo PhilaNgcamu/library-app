@@ -29,6 +29,7 @@ const StackNavigator = () => {
         name="Borrowing Details"
         component={BorrowingDetailsScreen}
       />
+      <Stack.Screen name="Scan QR Code" component={QRCodeScannerScreen} />
     </Stack.Navigator>
   );
 };
@@ -74,19 +75,7 @@ const TabNavigator = () => {
           ),
         }}
       />
-      <Tab.Screen
-        name="Scan QR Code"
-        component={QRCodeScannerScreen}
-        options={{
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-          tabBarLabel: "Add New Book",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="plus" color={color} size={size} />
-          ),
-        }}
-      />
+
       <Tab.Screen
         name="Users"
         component={UsersScreen}

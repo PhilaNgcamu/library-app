@@ -105,9 +105,10 @@ const ViewBookScreen = ({ navigation, route }) => {
       memberName: memberName,
       memberSurname: memberSurname,
       book: book,
-      borrowedDate: borrowedDate,
-      returnDate: returnDate,
+      borrowedDate: borrowedDate.toISOString().slice(0, 10),
+      returnDate: returnDate.toISOString().slice(0, 10),
     };
+    console.log(JSON.stringify(borrowedBookDetails, null, 2));
     setBorrowedBooks([...borrowedBooks, borrowedBookDetails]);
     setSnackbarVisible(true);
     const newCount = book.count - 1;

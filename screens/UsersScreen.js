@@ -63,8 +63,7 @@ const UsersScreen = () => {
                 <Text style={styles.bookTitle}>{user.book.title}</Text>
                 <Text style={styles.bookAuthor}>by {user.book.author}</Text>
                 <Text style={styles.dates}>
-                  Borrowed: {user.borrowedDate.slice(0, 10)} - Return:{" "}
-                  {user.returnDate.slice(0, 10)}
+                  Borrowed: {user.borrowedDate} - Return: {user.returnDate}
                 </Text>
               </TouchableOpacity>
 

@@ -28,28 +28,22 @@ To install the MBC Library App on your device, follow these steps:
 1. Clone this repository to your local machine using Git:
 
    ```bash
-   git clone https://github.com/your-username/mbc-library-app.git
+   git clone https://github.com/PhilaNgcamu/library-app.git
    ```
 
-2. Navigate to the project directory:
-
-   ```bash
-   cd mbc-library-app
-   ```
-
-3. Install dependencies using npm:
+2. Install dependencies using npm:
 
    ```bash
    npm install
    ```
 
-4. Start the development server:
+3. Start the development server:
 
    ```bash
    npm start
    ```
 
-5. Follow the instructions provided in the terminal to launch the app on your preferred platform (iOS, Android, or web browser).
+4. Follow the instructions provided in the terminal to launch the app on your preferred platform (iOS, Android, or web browser).
 
 ## Technologies Used
 

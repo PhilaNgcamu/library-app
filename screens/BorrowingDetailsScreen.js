@@ -62,19 +62,24 @@ const BookOption = ({ book, memberName, memberSurname, onPress }) => {
 
 const BorrowingDetailsScreen = ({ route }) => {
   const navigation = useNavigation();
-  const { memberName, memberSurname, borrowedDate, bookItem, author } =
-    route.params;
+  const {
+    memberName,
+    memberSurname,
+    borrowedDate,
+    returnDate,
+    bookItem,
+    author,
+  } = route.params;
 
   const borrowedDateObj = new Date(borrowedDate);
-  const returnDateObj = new Date(borrowedDateObj);
-  returnDateObj.setMonth(returnDateObj.getMonth() + 2);
+  const returnDateObj = new Date(returnDate);
 
   const currentBook = {
     id: 0,
     title: bookItem,
     author: author,
-    borrowedDate: borrowedDateObj.toISOString(),
-    returnDate: returnDateObj.toISOString(),
+    borrowedDate: borrowedDateObj,
+    returnDate: returnDateObj,
     coverUrl: "https://example.com/currentBook.jpg",
     available: true,
   };

@@ -5,10 +5,13 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  Dimensions,
 } from "react-native";
 import { Progress, ProgressFilledTrack } from "@gluestack-ui/themed";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+
+const { width, height } = Dimensions.get("window");
 
 const BookOption = ({ book, memberName, memberSurname, onPress }) => {
   const borrowedDateObj = new Date(book.borrowedDate);
@@ -43,7 +46,7 @@ const BookOption = ({ book, memberName, memberSurname, onPress }) => {
       <View style={styles.bookProgress}>
         <Progress
           value={progressPercentage}
-          w={150}
+          w={width * 0.4}
           size="sm"
           colorScheme="green"
         >
@@ -107,7 +110,7 @@ const BorrowingDetailsScreen = ({ route }) => {
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileContainer}>
-        <AntDesign name="user" size={100} color="black" />
+        <AntDesign name="user" size={width * 0.25} color="black" />
       </View>
       <View style={styles.infoContainer}>
         <View style={styles.infoItem}>
@@ -137,7 +140,7 @@ const BorrowingDetailsScreen = ({ route }) => {
             days
           </Text>
         </View>
-        <Progress value={progressPercentage} w={200} size="sm">
+        <Progress value={progressPercentage} w={width * 0.8} size="sm">
           <ProgressFilledTrack />
         </Progress>
       </View>
@@ -159,70 +162,73 @@ const BorrowingDetailsScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingHorizontal: 20,
+    paddingHorizontal: width * 0.05,
     backgroundColor: "#fff",
   },
   profileContainer: {
     justifyContent: "center",
-    marginTop: 20,
-    height: 150,
-    width: 150,
-    borderRadius: 75,
+    marginTop: height * 0.03,
+    height: width * 0.35,
+    width: width * 0.35,
+    borderRadius: (width * 0.35) / 2,
     backgroundColor: "#f0f0f0",
     alignSelf: "center",
     overflow: "hidden",
-    marginBottom: 30,
+    marginBottom: height * 0.05,
     alignItems: "center",
   },
   infoContainer: {
-    marginBottom: 30,
+    marginBottom: height * 0.05,
   },
   infoItem: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 15,
+    marginBottom: height * 0.02,
   },
   label: {
-    fontSize: 16,
+    fontSize: width * 0.04,
     fontWeight: "bold",
     width: "40%",
   },
   value: {
-    fontSize: 16,
+    fontSize: width * 0.04,
     width: "60%",
   },
   optionsTitle: {
-    fontSize: 20,
+    fontSize: width * 0.05,
     fontWeight: "bold",
-    marginBottom: 10,
+    marginBottom: height * 0.01,
   },
   bookOption: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: height * 0.02,
     backgroundColor: "#f0f0f0",
-    padding: 15,
-    borderRadius: 10,
+    padding: height * 0.02,
+    borderRadius: width * 0.02,
   },
-  bookInfo: {},
+  bookInfo: {
+    width: "60%",
+  },
   bookTitle: {
-    fontSize: 18,
+    fontSize: width * 0.045,
     fontWeight: "bold",
   },
   bookAuthor: {
-    fontSize: 16,
+    fontSize: width * 0.04,
   },
   bookMember: {
-    fontSize: 14,
+    fontSize: width * 0.035,
     color: "gray",
   },
   bookProgress: {
     alignItems: "flex-end",
+    width: "40%",
   },
   progressValue: {
-    marginTop: 5,
-    fontSize: 14,
+    marginTop: height * 0.01,
+    fontSize: width * 0.035,
   },
   icon: {
     position: "absolute",

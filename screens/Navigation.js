@@ -76,7 +76,7 @@ const TabNavigator = () => {
       />
 
       <Tab.Screen
-        name="Users"
+        name="Book Users"
         component={UsersScreen}
         options={{
           headerTitleStyle: {

@@ -2,6 +2,25 @@ import { ref, set, get, update } from "firebase/database";
 import actionTypes from "./actionTypes";
 import { database } from "../backend/firestoreConfig";
 
+export const increaseBookCount = (id) => {
+  return async (dispatch, getState) => {
+    try {
+      const book = getState().books.books.find((b) => b.id === id);
+      if (book) {
+        const newCount = book.count + 1;
+        const bookRef = ref(database, `books/${id}`);
+        await update(bookRef, { count: newCount, available: true });
+        dispatch({
+          type: actionTypes.INCREASE_BOOK_COUNT,
+          payload: { id },
+        });
+      }
+    } catch (error) {
+      console.error("Error increasing book count:", error);
+    }
+  };
+};
+
 export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
   return async (dispatch, getState) => {
     try {
@@ -47,11 +66,9 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
         if (existingBook) {
           const newCount = existingBook.count + 1;
           const bookRef = ref(database, `books/${existingBook.id}`);
-          await update(bookRef, { count: newCount });
-          dispatch({
-            type: actionTypes.INCREASE_BOOK_COUNT,
-            payload: { id: existingBook.id },
-          });
+          await update(bookRef, { count: newCount, available: true });
+          increaseBookCount(existingBook.id);
+          dispatch(storeBookIsbn(isbn));
         } else {
           const bookRef = ref(database, `books/${isbn}`);
           await set(bookRef, book);
@@ -115,25 +132,6 @@ export const storeBookIsbn = (isbn) => ({
   type: actionTypes.STORE_BOOK_ISBN,
   payload: isbn,
 });
-
-export const increaseBookCount = (id) => {
-  return async (dispatch, getState) => {
-    try {
-      const book = getState().books.books.find((b) => b.id === id);
-      if (book) {
-        const newCount = book.count + 1;
-        const bookRef = ref(database, `books/${id}`);
-        await update(bookRef, { count: newCount });
-        dispatch({
-          type: actionTypes.INCREASE_BOOK_COUNT,
-          payload: { id },
-        });
-      }
-    } catch (error) {
-      console.error("Error increasing book count:", error);
-    }
-  };
-};
 
 export const decreaseBookCount = (id) => {
   return async (dispatch, getState) => {

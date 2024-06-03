@@ -50,7 +50,7 @@ const BookOption = ({ book, memberName, memberSurname, onPress }) => {
           <ProgressFilledTrack />
         </Progress>
         <Text style={styles.progressValue}>
-          {remainingMonths} months {remainingDays % 30} days
+          {remainingMonths} months {remainingDays % 30} days remaining
         </Text>
       </View>
     </TouchableOpacity>
@@ -94,6 +94,16 @@ const BorrowingDetailsScreen = ({ route }) => {
     });
   };
 
+  const borrowedDuration = Math.ceil(
+    (returnDateObj - borrowedDateObj) / (1000 * 3600 * 24)
+  );
+
+  const remainingTimeMs = returnDateObj - new Date();
+  const remainingDays = Math.ceil(remainingTimeMs / (1000 * 3600 * 24));
+  const totalDurationDays = borrowedDuration;
+  const progressPercentage =
+    ((borrowedDuration - remainingDays) / totalDurationDays) * 100;
+
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileContainer}>
@@ -127,7 +137,7 @@ const BorrowingDetailsScreen = ({ route }) => {
             days
           </Text>
         </View>
-        <Progress value={50} w={200} size="sm">
+        <Progress value={progressPercentage} w={200} size="sm">
           <ProgressFilledTrack />
         </Progress>
       </View>
@@ -157,7 +167,7 @@ const styles = StyleSheet.create({
     marginTop: 20,
     height: 150,
     width: 150,
-    borderRadius: 5,
+    borderRadius: 75,
     backgroundColor: "#f0f0f0",
     alignSelf: "center",
     overflow: "hidden",

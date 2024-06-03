@@ -104,10 +104,7 @@ const ViewBookScreen = ({ navigation, route }) => {
     const borrowedBookDetails = {
       memberName: memberName,
       memberSurname: memberSurname,
-      book: {
-        title: book.title,
-        author: book.author,
-      },
+      book: book,
       borrowedDate: borrowedDate,
       returnDate: returnDate,
     };
@@ -446,7 +443,7 @@ const styles = StyleSheet.create({
     padding: 20,
     borderRadius: 10,
     alignItems: "center",
-    width: "90%", // Ensure modal width fits well on all screens
+    width: "90%",
   },
   modalTitle: {
     fontSize: 20,

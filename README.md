@@ -54,7 +54,7 @@ To install the MBC Library App on your device, follow these steps:
 
 ## Contributing
 
-We welcome contributions from the community to help improve the MBC Library App. If you would like to contribute, please follow these guidelines:
+Contributions are welcome to help improve the MBC Library App. If you would like to contribute, please follow these guidelines:
 
 1. Fork the repository and create a new branch for your feature or bug fix.
 2. Make your changes and ensure that the code passes all tests.

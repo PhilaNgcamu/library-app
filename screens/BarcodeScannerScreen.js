@@ -56,7 +56,7 @@ const QRCodeScannerScreen = () => {
     const isbn = extractISBN(data);
     console.log("ISBN:", isbn);
 
-    dispatch(searchBook(isbn));
+    dispatch(searchBook("0310337372"));
     dispatch(isScanModalVisible());
   };
 

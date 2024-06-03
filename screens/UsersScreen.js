@@ -10,6 +10,7 @@ import { ref, onValue } from "firebase/database";
 import { database } from "../backend/firestoreConfig";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const UsersScreen = () => {
   const [usersWithBooks, setUsersWithBooks] = useState([]);
@@ -39,29 +40,39 @@ const UsersScreen = () => {
 
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Borrowed Books</Text>
-      <ScrollView style={styles.scrollContainer}>
-        {usersWithBooks.map((user, index) => (
-          <View key={index} style={styles.userContainer}>
-            <TouchableOpacity
-              style={styles.userDetails}
-              onPress={() => handleViewBorrowingDetails(user)}
-            >
-              <Text style={styles.userName}>
-                {user.memberName} {user.memberSurname}
-              </Text>
-              <Text style={styles.bookTitle}>{user.book.title}</Text>
-              <Text style={styles.bookAuthor}>by {user.book.author}</Text>
-              <Text style={styles.dates}>
-                Borrowed: {user.borrowedDate.slice(0, 10)} - Return:{" "}
-                {user.returnDate.slice(0, 10)}
-              </Text>
-            </TouchableOpacity>
+      {usersWithBooks.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <MaterialCommunityIcons
+            name="book-off-outline"
+            size={80}
+            color="gray"
+          />
+          <Text style={styles.emptyText}>No borrowed books at the moment</Text>
+        </View>
+      ) : (
+        <ScrollView style={styles.scrollContainer}>
+          {usersWithBooks.map((user, index) => (
+            <View key={index} style={styles.userContainer}>
+              <TouchableOpacity
+                style={styles.userDetails}
+                onPress={() => handleViewBorrowingDetails(user)}
+              >
+                <Text style={styles.userName}>
+                  {user.memberName} {user.memberSurname}
+                </Text>
+                <Text style={styles.bookTitle}>{user.book.title}</Text>
+                <Text style={styles.bookAuthor}>by {user.book.author}</Text>
+                <Text style={styles.dates}>
+                  Borrowed: {user.borrowedDate.slice(0, 10)} - Return:{" "}
+                  {user.returnDate.slice(0, 10)}
+                </Text>
+              </TouchableOpacity>
 
-            <AntDesign name="arrowright" size={24} color="gray" />
-          </View>
-        ))}
-      </ScrollView>
+              <AntDesign name="arrowright" size={24} color="gray" />
+            </View>
+          ))}
+        </ScrollView>
+      )}
     </View>
   );
 };
@@ -123,6 +134,16 @@ const styles = StyleSheet.create({
   },
   iconContainer: {
     marginLeft: 10,
+  },
+  emptyContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "gray",
+    marginTop: 20,
   },
 });
 

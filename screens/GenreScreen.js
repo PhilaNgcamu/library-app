@@ -8,6 +8,7 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useSelector } from "react-redux";
+import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const GenreScreen = ({ navigation }) => {
   const allBooks = useSelector((state) => state.books.books);
@@ -67,6 +68,11 @@ const GenreScreen = ({ navigation }) => {
     <View style={styles.container}>
       {Object.keys(categorizedBooks).length === 0 ? (
         <View style={styles.emptyStateContainer}>
+          <MaterialCommunityIcons
+            name="book-off-outline"
+            size={80}
+            color="gray"
+          />
           <Text style={styles.emptyStateText}>
             No categories or books available.
           </Text>
@@ -143,6 +149,8 @@ const styles = StyleSheet.create({
   emptyStateText: {
     fontSize: 18,
     color: "#777",
+    textAlign: "center",
+    marginTop: 10,
   },
   categoryListContainer: {
     paddingBottom: 20,

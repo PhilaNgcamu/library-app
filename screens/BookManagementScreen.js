@@ -9,7 +9,6 @@ import {
   Modal,
   TouchableWithoutFeedback,
   FlatList,
-  Animated,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";

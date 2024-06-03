@@ -42,13 +42,10 @@ const BookManagementScreen = () => {
   const selectedBook = useSelector((state) => state.books.selectedBook);
   const books = useSelector((state) => state.books.books);
 
-  const [fabVisible, setFabVisible] = useState(true);
   const [isExtended, setIsExtended] = useState(true);
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
-
-  const scrollY = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     dispatch(fetchBooks());
@@ -139,7 +136,7 @@ const BookManagementScreen = () => {
   };
 
   const handleAddVisitor = () => {
-    navigation.navigate("Scan QR Code");
+    navigation.navigate("Scan Bookcode");
   };
 
   const renderBookItem = ({ item }) => {

@@ -9,6 +9,7 @@ import {
 import { ref, onValue } from "firebase/database";
 import { database } from "../backend/firestoreConfig";
 import { useNavigation } from "@react-navigation/native";
+import { AntDesign } from "@expo/vector-icons";
 
 const UsersScreen = () => {
   const [usersWithBooks, setUsersWithBooks] = useState([]);
@@ -38,24 +39,27 @@ const UsersScreen = () => {
 
   return (
     <View style={styles.container}>
+      <Text style={styles.title}>Borrowed Books</Text>
       <ScrollView style={styles.scrollContainer}>
         {usersWithBooks.map((user, index) => (
-          <TouchableOpacity
-            key={index}
-            style={styles.userContainer}
-            onPress={() => handleViewBorrowingDetails(user)}
-          >
-            <Text style={styles.userInfo}>
-              Member: {user.memberName} {user.memberSurname}
-            </Text>
-            <Text style={styles.userInfo}>
-              Book: {user.book.title} by {user.book.author}
-            </Text>
-            <Text style={styles.userInfo}>
-              Borrowed Date: {user.borrowedDate}
-            </Text>
-            <Text style={styles.userInfo}>Return Date: {user.returnDate}</Text>
-          </TouchableOpacity>
+          <View key={index} style={styles.userContainer}>
+            <TouchableOpacity
+              style={styles.userDetails}
+              onPress={() => handleViewBorrowingDetails(user)}
+            >
+              <Text style={styles.userName}>
+                {user.memberName} {user.memberSurname}
+              </Text>
+              <Text style={styles.bookTitle}>{user.book.title}</Text>
+              <Text style={styles.bookAuthor}>by {user.book.author}</Text>
+              <Text style={styles.dates}>
+                Borrowed: {user.borrowedDate.slice(0, 10)} - Return:{" "}
+                {user.returnDate.slice(0, 10)}
+              </Text>
+            </TouchableOpacity>
+
+            <AntDesign name="arrowright" size={24} color="gray" />
+          </View>
         ))}
       </ScrollView>
     </View>
@@ -73,21 +77,52 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 20,
     textAlign: "center",
+    color: "#333",
   },
   scrollContainer: {
     flex: 1,
   },
   userContainer: {
-    borderWidth: 1,
-    borderColor: "#ccc",
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#fff",
     borderRadius: 10,
     padding: 15,
     marginBottom: 15,
-    backgroundColor: "#fff",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 5,
+    elevation: 3,
   },
-  userInfo: {
+  userDetails: {
+    flex: 1,
+  },
+  userName: {
+    fontSize: 18,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 5,
+  },
+  bookTitle: {
     fontSize: 16,
-    marginBottom: 8,
+    color: "#666",
+    marginBottom: 5,
+  },
+  bookAuthor: {
+    fontSize: 14,
+    color: "#888",
+    marginBottom: 10,
+  },
+  dates: {
+    fontSize: 12,
+    color: "#999",
+  },
+  iconContainer: {
+    marginLeft: 10,
   },
 });
 

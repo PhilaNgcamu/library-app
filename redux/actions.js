@@ -47,8 +47,13 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
         if (existingBook) {
           const newCount = existingBook.count + 1;
           const bookRef = ref(database, `books/${existingBook.id}`);
-          await update(bookRef, { count: newCount });
-          increaseBookCount(existingBook.id);
+          await update(bookRef, { count: newCount, available: true });
+          dispatch({
+            type: actionTypes.INCREASE_BOOK_COUNT,
+            payload: { id: existingBook.id },
+          });
+          dispatch(storeBookIsbn(isbn));
+          dispatch(addBook(book));
         } else {
           const bookRef = ref(database, `books/${isbn}`);
           await set(bookRef, book);

@@ -7,7 +7,6 @@ import {
   TouchableOpacity,
   Dimensions,
 } from "react-native";
-import { Progress, ProgressFilledTrack } from "@gluestack-ui/themed";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
@@ -30,28 +29,21 @@ const BookOption = ({ book, memberName, memberSurname, onPress }) => {
   const progressPercentage =
     ((borrowedDuration - remainingDays) / totalDurationDays) * 100;
 
-  const truncateTitle = (title) => {
-    return title.length > 20 ? `${title.substring(0, 17)}...` : title;
-  };
-
   return (
     <TouchableOpacity onPress={onPress} style={styles.bookOption}>
       <View style={styles.bookInfo}>
-        <Text style={styles.bookTitle}>{truncateTitle(book.title)}</Text>
+        <Text style={styles.bookTitle}>{book.title}</Text>
         <Text style={styles.bookAuthor}>{book.author}</Text>
         <Text style={styles.bookMember}>
           Borrowed by: {memberName} {memberSurname}
         </Text>
       </View>
       <View style={styles.bookProgress}>
-        <Progress
-          value={progressPercentage}
-          w={width * 0.4}
-          size="sm"
-          colorScheme="green"
-        >
-          <ProgressFilledTrack />
-        </Progress>
+        <View style={styles.progressBarContainer}>
+          <View
+            style={[styles.progressBar, { width: `${progressPercentage}%` }]}
+          />
+        </View>
         <Text style={styles.progressValue}>
           {remainingMonths} months {remainingDays % 30} days remaining
         </Text>
@@ -69,64 +61,56 @@ const BorrowingDetailsScreen = ({ route }) => {
     returnDate,
     bookItem,
     author,
+    bookId,
   } = route.params;
 
   const borrowedDateObj = new Date(borrowedDate);
   const returnDateObj = new Date(returnDate);
-
-  const currentBook = {
-    id: 0,
-    title: bookItem,
-    author: author,
-    borrowedDate: borrowedDateObj,
-    returnDate: returnDateObj,
-    coverUrl: "https://example.com/currentBook.jpg",
-    available: true,
-  };
-
-  const options = [];
-
-  const uniqueOptions = [
-    currentBook,
-    ...options.filter((option) => option.title !== bookItem),
-  ];
-
-  const handleViewBookDetails = (book) => {
-    navigation.navigate("Borrowing Details", {
-      memberName,
-      memberSurname,
-      borrowedDate: book.borrowedDate,
-      returnDate: book.returnDate,
-      bookItem: book.title,
-      author: book.author,
-    });
-  };
+  const currentDateObj = new Date();
 
   const borrowedDuration = Math.ceil(
     (returnDateObj - borrowedDateObj) / (1000 * 3600 * 24)
   );
 
-  const remainingTimeMs = returnDateObj - new Date();
+  const remainingTimeMs = returnDateObj - currentDateObj;
   const remainingDays = Math.ceil(remainingTimeMs / (1000 * 3600 * 24));
-  const totalDurationDays = borrowedDuration;
   const progressPercentage =
-    ((borrowedDuration - remainingDays) / totalDurationDays) * 100;
+    ((borrowedDuration - remainingDays) / borrowedDuration) * 100;
+
+  const handlePlaceHold = async () => {
+    try {
+      // Add your API call here to place a hold
+      // For example:
+      // await placeHold(bookId, currentUserId);
+      alert(
+        "Hold placed successfully! You will be notified when the book becomes available."
+      );
+    } catch (error) {
+      alert("Failed to place hold. Please try again.");
+      console.error("Error placing hold:", error);
+    }
+  };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileContainer}>
-        <AntDesign name="user" size={width * 0.25} color="black" />
+        <AntDesign name="user" size={width * 0.15} color="#666" />
       </View>
+
       <View style={styles.infoContainer}>
         <View style={styles.infoItem}>
-          <Text style={styles.label}>Member Name:</Text>
+          <Text style={styles.label}>Member:</Text>
           <Text style={styles.value}>
             {memberName} {memberSurname}
           </Text>
         </View>
         <View style={styles.infoItem}>
-          <Text style={styles.label}>Current Book:</Text>
+          <Text style={styles.label}>Book:</Text>
           <Text style={styles.value}>{bookItem}</Text>
+        </View>
+        <View style={styles.infoItem}>
+          <Text style={styles.label}>Author:</Text>
+          <Text style={styles.value}>{author}</Text>
         </View>
         <View style={styles.infoItem}>
           <Text style={styles.label}>Borrowed Date:</Text>
@@ -139,27 +123,21 @@ const BorrowingDetailsScreen = ({ route }) => {
           <Text style={styles.value}>{returnDateObj.toLocaleDateString()}</Text>
         </View>
         <View style={styles.infoItem}>
-          <Text style={styles.label}>Borrowed Duration:</Text>
-          <Text style={styles.value}>
-            {Math.ceil((returnDateObj - borrowedDateObj) / (1000 * 3600 * 24))}{" "}
-            days
-          </Text>
+          <Text style={styles.label}>Duration:</Text>
+          <Text style={styles.value}>{borrowedDuration} days</Text>
         </View>
-        <Progress value={progressPercentage} w={width * 0.8} size="sm">
-          <ProgressFilledTrack />
-        </Progress>
+        <View style={styles.progressBarContainer}>
+          <View
+            style={[styles.progressBar, { width: `${progressPercentage}%` }]}
+          />
+        </View>
+        <TouchableOpacity
+          style={styles.placeHoldButton}
+          onPress={handlePlaceHold}
+        >
+          <Text style={styles.placeHoldButtonText}>Place Hold</Text>
+        </TouchableOpacity>
       </View>
-
-      <Text style={styles.optionsTitle}>Other Current Reads</Text>
-      {uniqueOptions.map((option) => (
-        <BookOption
-          key={option.id}
-          book={option}
-          memberName={memberName}
-          memberSurname={memberSurname}
-          onPress={() => handleViewBookDetails(option)}
-        />
-      ))}
     </ScrollView>
   );
 };
@@ -167,77 +145,108 @@ const BorrowingDetailsScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingHorizontal: width * 0.05,
+    padding: width * 0.05,
     backgroundColor: "#fff",
   },
   profileContainer: {
     justifyContent: "center",
+    alignItems: "center",
     marginTop: height * 0.03,
     height: width * 0.35,
     width: width * 0.35,
-    borderRadius: (width * 0.35) / 2,
+    borderRadius: width * 0.175,
     backgroundColor: "#f0f0f0",
     alignSelf: "center",
-    overflow: "hidden",
     marginBottom: height * 0.05,
-    alignItems: "center",
   },
   infoContainer: {
-    marginBottom: height * 0.05,
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   infoItem: {
     flexDirection: "row",
-    justifyContent: "space-between",
     marginBottom: height * 0.02,
   },
   label: {
     fontSize: width * 0.04,
     fontWeight: "bold",
     width: "40%",
+    color: "#333",
   },
   value: {
     fontSize: width * 0.04,
     width: "60%",
+    color: "#666",
   },
-  optionsTitle: {
-    fontSize: width * 0.05,
-    fontWeight: "bold",
-    marginBottom: height * 0.01,
+  progressBarContainer: {
+    width: "100%",
+    height: 8,
+    backgroundColor: "#e0e0e0",
+    borderRadius: 4,
+    overflow: "hidden",
+    marginTop: 10,
+  },
+  progressBar: {
+    height: "100%",
+    backgroundColor: "#32a244",
   },
   bookOption: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    marginBottom: height * 0.02,
-    backgroundColor: "#f0f0f0",
-    padding: height * 0.02,
-    borderRadius: width * 0.02,
+    padding: 15,
+    backgroundColor: "#f5f5f5",
+    borderRadius: 10,
+    marginBottom: 10,
   },
   bookInfo: {
-    width: "60%",
+    flex: 1,
+    marginRight: 10,
   },
   bookTitle: {
-    fontSize: width * 0.045,
+    fontSize: 16,
     fontWeight: "bold",
+    color: "#333",
   },
   bookAuthor: {
-    fontSize: width * 0.04,
+    fontSize: 14,
+    color: "#666",
   },
   bookMember: {
-    fontSize: width * 0.035,
-    color: "gray",
+    fontSize: 12,
+    color: "#888",
+    marginTop: 5,
   },
   bookProgress: {
-    alignItems: "flex-end",
     width: "40%",
+    alignItems: "flex-end",
   },
   progressValue: {
-    marginTop: height * 0.01,
-    fontSize: width * 0.035,
+    fontSize: 12,
+    color: "#666",
+    marginTop: 5,
+    textAlign: "right",
   },
-  icon: {
-    position: "absolute",
-    left: "90%",
+  placeHoldButton: {
+    backgroundColor: "#4a90e2",
+    padding: 15,
+    borderRadius: 8,
+    marginTop: 20,
+    alignItems: "center",
+  },
+  placeHoldButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

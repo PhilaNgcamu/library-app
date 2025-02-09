@@ -10,10 +10,17 @@ import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import BorrowingDetailsScreen from "./BorrowingDetailsScreen";
 import UsersScreen from "./UsersScreen";
 import GenreScreen from "./GenreScreen";
+import LoginScreen from "./LoginScreen";
+import SignupScreen from "./SignupScreen";
+import { useAuth } from "../contexts/AuthContext";
+import { TouchableOpacity } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 
 const Stack = createStackNavigator();
 
 const StackNavigator = () => {
+  const { logout } = useAuth();
+
   return (
     <Stack.Navigator>
       <Stack.Screen
@@ -21,6 +28,13 @@ const StackNavigator = () => {
         component={BookManagementScreen}
         options={{
           headerShown: false,
+          headerStyle: {
+            backgroundColor: "#32a244",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
         }}
       />
       <Stack.Screen name="Book Details" component={ViewBookScreen} />
@@ -33,9 +47,29 @@ const StackNavigator = () => {
   );
 };
 
+const UsersStackNavigator = () => {
+  return (
+    <Stack.Navigator>
+      <Stack.Screen
+        name="Users List"
+        component={UsersScreen}
+        options={{
+          headerShown: false,
+        }}
+      />
+      <Stack.Screen
+        name="Borrowing Details"
+        component={BorrowingDetailsScreen}
+      />
+    </Stack.Navigator>
+  );
+};
+
 const Tab = createBottomTabNavigator();
 
 const TabNavigator = () => {
+  const { logout, userRole } = useAuth();
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -60,6 +94,11 @@ const TabNavigator = () => {
         name="MBC Library"
         component={StackNavigator}
         options={{
+          headerRight: () => (
+            <TouchableOpacity onPress={logout} style={{ marginRight: 15 }}>
+              <Ionicons name="log-out-outline" size={24} color="#fff" />
+            </TouchableOpacity>
+          ),
           headerStyle: {
             backgroundColor: "#32a244",
             shadowColor: "transparent",
@@ -75,40 +114,71 @@ const TabNavigator = () => {
         }}
       />
 
-      <Tab.Screen
-        name="Book Users"
-        component={UsersScreen}
-        options={{
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-          tabBarLabel: "Users",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialCommunityIcons name="account" color={color} size={size} />
-          ),
-        }}
-      />
-      <Tab.Screen
-        name="Categories"
-        component={GenreScreen}
-        options={{
-          headerTitleStyle: {
-            fontWeight: "bold",
-          },
-          tabBarLabel: "Categories",
-          tabBarIcon: ({ color, size }) => (
-            <MaterialIcons name="category" color={color} size={size} />
-          ),
-        }}
-      />
+      {userRole === "admin" && (
+        <>
+          <Tab.Screen
+            name="Book Users"
+            component={UsersStackNavigator}
+            options={{
+              headerStyle: {
+                backgroundColor: "#32a244",
+                shadowColor: "transparent",
+              },
+              headerTintColor: "#fff",
+              headerTitleStyle: {
+                fontWeight: "bold",
+              },
+              tabBarLabel: "Users",
+              tabBarIcon: ({ color, size }) => (
+                <MaterialCommunityIcons
+                  name="account"
+                  color={color}
+                  size={size}
+                />
+              ),
+            }}
+          />
+          <Tab.Screen
+            name="Categories"
+            component={GenreScreen}
+            options={{
+              headerStyle: {
+                backgroundColor: "#32a244",
+                shadowColor: "transparent",
+              },
+              headerTintColor: "#fff",
+              headerTitleStyle: {
+                fontWeight: "bold",
+              },
+              tabBarLabel: "Categories",
+              tabBarIcon: ({ color, size }) => (
+                <MaterialIcons name="category" color={color} size={size} />
+              ),
+            }}
+          />
+        </>
+      )}
     </Tab.Navigator>
   );
 };
 
+const AuthStack = createStackNavigator();
+
+const AuthNavigator = () => {
+  return (
+    <AuthStack.Navigator screenOptions={{ headerShown: false }}>
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Signup" component={SignupScreen} />
+    </AuthStack.Navigator>
+  );
+};
+
 const NavigationApp = () => {
+  const { user } = useAuth();
+
   return (
     <NavigationContainer>
-      <TabNavigator />
+      {user ? <TabNavigator /> : <AuthNavigator />}
     </NavigationContainer>
   );
 };

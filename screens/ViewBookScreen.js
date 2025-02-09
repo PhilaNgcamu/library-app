@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ref, push } from "firebase/database";
 import {
   View,
@@ -11,12 +11,16 @@ import {
   Dimensions,
   TextInput,
 } from "react-native";
-import { Button, ButtonText } from "@gluestack-ui/themed";
 import { useDispatch, useSelector } from "react-redux";
 import { Snackbar } from "react-native-paper";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import { updateBookAvailability } from "../redux/actions";
-import { database } from "../backend/firestoreConfig";
+import {
+  updateBookAvailability,
+  setSnackbarVisible,
+  setSnackbarMessage,
+  borrowBook,
+} from "../redux/actions";
+import { database } from "../services/firebase/config";
 
 const ViewBookScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
@@ -40,6 +44,19 @@ const ViewBookScreen = ({ navigation, route }) => {
   const [showReturnDatePicker, setShowReturnDatePicker] = useState(false);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [showMoreUsers, setShowMoreUsers] = useState(false);
+  const snackbarMessage = useSelector((state) => state.books.snackbarMessage);
+
+  useEffect(() => {
+    if (!book) {
+      dispatch(setSnackbarMessage("Book not found"));
+      dispatch(setSnackbarVisible(true));
+      navigation.goBack();
+    }
+  }, [book, bookId]);
+
+  if (!book) {
+    return null;
+  }
 
   const available = book.count > 0;
 
@@ -69,54 +86,55 @@ const ViewBookScreen = ({ navigation, route }) => {
     setReturnDateError("");
   };
 
+  const calculateReturnDate = () => {
+    const borrowDate = new Date();
+    const returnDate = new Date(borrowDate);
+    returnDate.setDate(borrowDate.getDate() + 28); // 4 weeks
+    return returnDate;
+  };
+
   const handleSubmitForm = () => {
-    let valid = true;
-    if (memberName.trim() === "") {
-      setMemberNameError("Member name is required.");
-      valid = false;
-    } else {
-      setMemberNameError("");
+    // Add validation for dates
+    if (!memberName.trim() || !memberSurname.trim()) {
+      if (!memberName.trim()) setMemberNameError("Member name is required");
+      if (!memberSurname.trim())
+        setMemberSurnameError("Member surname is required");
+      return;
     }
 
-    if (memberSurname.trim() === "") {
-      setMemberSurnameError("Member surname is required.");
-      valid = false;
-    } else {
-      setMemberSurnameError("");
+    // Clear any previous errors
+    setMemberNameError("");
+    setMemberSurnameError("");
+    setBorrowedDateError("");
+    setReturnDateError("");
+
+    try {
+      const borrowedBook = {
+        book: {
+          id: book.id,
+          title: book.title,
+          author: book.author,
+          coverUrl: book.coverUrl, // Add coverUrl for display
+        },
+        memberName: memberName.trim(),
+        memberSurname: memberSurname.trim(),
+        borrowedDate: new Date().toISOString(),
+        returnDate: calculateReturnDate().toISOString(),
+      };
+
+      dispatch(borrowBook(borrowedBook)).then((result) => {
+        if (result.success) {
+          setSnackbarVisible(true);
+          closeModal();
+          navigation.goBack();
+        } else {
+          setSnackbarVisible(true);
+        }
+      });
+    } catch (error) {
+      console.error("Error borrowing book:", error);
+      setSnackbarVisible(true);
     }
-
-    if (!borrowedDate) {
-      setBorrowedDateError("Borrowed date is required.");
-      valid = false;
-    } else {
-      setBorrowedDateError("");
-    }
-
-    if (!returnDate) {
-      setReturnDateError("Return date is required.");
-      valid = false;
-    } else {
-      setReturnDateError("");
-    }
-
-    if (!valid) return;
-
-    const borrowedBookDetails = {
-      memberName: memberName,
-      memberSurname: memberSurname,
-      book: book,
-      borrowedDate: borrowedDate.toISOString().slice(0, 10),
-      returnDate: returnDate.toISOString().slice(0, 10),
-    };
-    console.log(JSON.stringify(borrowedBookDetails, null, 2));
-    setBorrowedBooks([...borrowedBooks, borrowedBookDetails]);
-    setSnackbarVisible(true);
-    const newCount = book.count - 1;
-    dispatch(updateBookAvailability(book.id, newCount));
-
-    const borrowedBooksRef = ref(database, "borrowedBooks");
-    push(borrowedBooksRef, borrowedBookDetails);
-    closeModal();
   };
 
   const handleBorrowedDateChange = (event, selectedDate) => {
@@ -146,8 +164,12 @@ const ViewBookScreen = ({ navigation, route }) => {
     });
   };
 
+  const onDismissSnackbar = () => {
+    dispatch(setSnackbarVisible(false));
+  };
+
   return (
-    <View>
+    <>
       <ScrollView contentContainerStyle={styles.container}>
         <View style={styles.coverContainer}>
           <Image source={{ uri: book.coverUrl }} style={styles.cover} />
@@ -202,122 +224,88 @@ const ViewBookScreen = ({ navigation, route }) => {
               {available ? "Available" : "Not Available"}
             </Text>
           </View>
-          <View style={styles.buttonsContainer}>
-            <Button
-              bgColor="#32a244"
-              onPress={handleBorrow}
-              style={[styles.button, !available && styles.disabledButton]}
-              disabled={isBorrowing || !available}
-            >
-              <ButtonText style={!available && styles.disabledText}>
-                {isBorrowing ? "Borrowing..." : "Borrow"}
-              </ButtonText>
-            </Button>
-          </View>
         </View>
+
+        <View style={styles.buttonsContainer}>
+          <TouchableOpacity
+            style={[styles.button, !available && styles.disabledButton]}
+            onPress={handleBorrow}
+            disabled={!available}
+          >
+            <Text
+              style={[styles.buttonText, !available && styles.disabledText]}
+            >
+              {available ? "Borrow Book" : "Not Available"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
         <Modal
-          animationType="fade"
+          animationType="slide"
           transparent={true}
-          visible={isScanModalVisible}
+          visible={isBorrowing}
           onRequestClose={closeModal}
         >
           <View style={styles.modalContainer}>
             <View style={styles.modal}>
               <Text style={styles.modalTitle}>Borrow Book</Text>
-              <Text style={styles.modalMessage}>
-                Enter Member Details to Borrow:
-              </Text>
+
               <View style={styles.inputContainer}>
-                <View>
-                  <Text style={styles.inputLabel}>Member's Name:</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Enter Member's Name"
-                    value={memberName}
-                    onChangeText={handleMemberNameChange}
-                  />
-                  {memberNameError ? (
-                    <Text style={styles.errorText}>{memberNameError}</Text>
-                  ) : null}
-                </View>
-                <View>
-                  <Text style={styles.inputLabel}>Member's Surname:</Text>
-                  <TextInput
-                    style={styles.textInput}
-                    placeholder="Enter Member's Surname"
-                    value={memberSurname}
-                    onChangeText={handleMemberSurnameChange}
-                  />
-                  {memberSurnameError ? (
-                    <Text style={styles.errorText}>{memberSurnameError}</Text>
-                  ) : null}
-                </View>
-                <View>
-                  <Text style={styles.inputLabel}>Borrowed Date:</Text>
-                  <TouchableOpacity
-                    onPress={() => setShowBorrowedDatePicker(true)}
-                  >
-                    <TextInput
-                      style={styles.textInput}
-                      placeholder="Select Date"
-                      value={borrowedDate.toLocaleDateString()}
-                      editable={false}
-                    />
-                  </TouchableOpacity>
-                  {borrowedDateError ? (
-                    <Text style={styles.errorText}>{borrowedDateError}</Text>
-                  ) : null}
-                </View>
-                <View>
-                  <Text style={styles.inputLabel}>Return Date:</Text>
-                  <TouchableOpacity
-                    onPress={() => setShowReturnDatePicker(true)}
-                  >
-                    <TextInput
-                      style={styles.textInput}
-                      placeholder="Select Date"
-                      value={returnDate.toLocaleDateString()}
-                      editable={false}
-                    />
-                  </TouchableOpacity>
-                  {returnDateError ? (
-                    <Text style={styles.errorText}>{returnDateError}</Text>
-                  ) : null}
-                </View>
-                {showBorrowedDatePicker && (
-                  <DateTimePicker
-                    value={borrowedDate}
-                    mode="date"
-                    display="spinner"
-                    onChange={handleBorrowedDateChange}
-                  />
-                )}
-                {showReturnDatePicker && (
-                  <DateTimePicker
-                    value={returnDate}
-                    mode="date"
-                    display="spinner"
-                    onChange={handleReturnDateChange}
-                  />
-                )}
+                <Text style={styles.inputLabel}>Member Name</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={memberName}
+                  onChangeText={handleMemberNameChange}
+                  placeholder="Enter member name"
+                />
+                {memberNameError ? (
+                  <Text style={styles.errorText}>{memberNameError}</Text>
+                ) : null}
               </View>
+
+              <View style={styles.inputContainer}>
+                <Text style={styles.inputLabel}>Member Surname</Text>
+                <TextInput
+                  style={styles.textInput}
+                  value={memberSurname}
+                  onChangeText={handleMemberSurnameChange}
+                  placeholder="Enter member surname"
+                />
+                {memberSurnameError ? (
+                  <Text style={styles.errorText}>{memberSurnameError}</Text>
+                ) : null}
+              </View>
+
+              <View style={styles.dateInfoContainer}>
+                <Text style={styles.dateInfoText}>
+                  Borrow Date: {new Date().toLocaleDateString()}
+                </Text>
+                <Text style={styles.dateInfoText}>
+                  Return Date: {calculateReturnDate().toLocaleDateString()}
+                </Text>
+                <Text style={styles.dateInfoNote}>
+                  Books must be returned within 4 weeks
+                </Text>
+              </View>
+
               <View style={styles.modalButtonContainer}>
                 <TouchableOpacity
-                  onPress={handleSubmitForm}
-                  style={styles.modalButton}
-                >
-                  <Text style={styles.modalButtonText}>Confirm</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
+                  style={[styles.modalButton, styles.cancelButton]}
                   onPress={closeModal}
-                  style={styles.cancelButton}
                 >
                   <Text style={styles.cancelButtonText}>Cancel</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={handleSubmitForm}
+                >
+                  <Text style={styles.modalButtonText}>Confirm</Text>
                 </TouchableOpacity>
               </View>
             </View>
           </View>
         </Modal>
+
         {borrowedBooks.length > 0 && (
           <View style={styles.borrowedInfoContainer}>
             <Text style={styles.borrowedInfoTitle}>Current Users</Text>
@@ -346,29 +334,26 @@ const ViewBookScreen = ({ navigation, route }) => {
       </ScrollView>
 
       <Snackbar
-        visible={snackbarVisible && !isScanModalVisible}
+        visible={snackbarVisible}
+        onDismiss={onDismissSnackbar}
+        duration={3000}
         style={styles.snackbar}
-        onDismiss={() => {
-          setIsBorrowing(false);
-          setSnackbarVisible(false);
-        }}
-        duration={2000}
         action={{
-          textColor: "white",
+          label: "Close",
+          onPress: onDismissSnackbar,
         }}
       >
-        Book borrowed successfully!
+        {snackbarMessage}
       </Snackbar>
-    </View>
+    </>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flexGrow: 1,
-    paddingHorizontal: 15,
-    paddingVertical: 10,
-    backgroundColor: "#f7f7f7",
+    padding: 20,
+    backgroundColor: "#fff",
   },
   coverContainer: {
     alignItems: "center",
@@ -394,19 +379,113 @@ const styles = StyleSheet.create({
   },
   row: {
     flexDirection: "row",
-    justifyContent: "space-between",
     marginBottom: 10,
   },
   label: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     width: "30%",
+    color: "#333",
   },
   text: {
     fontSize: 16,
     width: "70%",
-    marginTop: 2,
-    color: "#777",
+    color: "#666",
+  },
+  buttonsContainer: {
+    marginTop: 20,
+  },
+  button: {
+    backgroundColor: "#32a244",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  disabledButton: {
+    backgroundColor: "#ccc",
+    opacity: 0.7,
+  },
+  disabledText: {
+    color: "#666",
+  },
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+  },
+  modal: {
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 10,
+    padding: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    marginBottom: 20,
+    textAlign: "center",
+    color: "#333",
+  },
+  inputContainer: {
+    marginBottom: 15,
+  },
+  inputLabel: {
+    fontSize: 16,
+    marginBottom: 5,
+    color: "#333",
+  },
+  textInput: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    padding: 12,
+    fontSize: 16,
+    backgroundColor: "#f9f9f9",
+  },
+  errorText: {
+    color: "red",
+    fontSize: 14,
+    marginTop: 5,
+  },
+  modalButtonContainer: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 20,
+    gap: 10,
+  },
+  modalButton: {
+    flex: 1,
+    backgroundColor: "#32a244",
+    padding: 15,
+    borderRadius: 8,
+    alignItems: "center",
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  cancelButton: {
+    backgroundColor: "#e0e0e0",
+  },
+  cancelButtonText: {
+    color: "#666",
+    fontSize: 16,
+    fontWeight: "bold",
   },
   descriptionContainer: {
     width: "70%",
@@ -416,103 +495,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     textAlign: "justify",
     marginTop: 2,
-  },
-  buttonsContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  button: {
-    marginHorizontal: 10,
-  },
-  disabledButton: {
-    marginHorizontal: 10,
-    opacity: 0.5,
-  },
-  disabledText: {
-    color: "#fff",
-  },
-  modalContainer: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
-  },
-  modal: {
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
-    width: "90%",
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 10,
-    textAlign: "center",
-  },
-  modalMessage: {
-    fontSize: 16,
-    marginBottom: 20,
-    textAlign: "center",
-  },
-  modalButtonContainer: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    width: "100%",
-    marginTop: 20,
-  },
-  modalButton: {
-    backgroundColor: "#32a244",
-    padding: 10,
-    borderRadius: 5,
-    width: "40%",
-  },
-  modalButtonText: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  cancelButton: {
-    padding: 10,
-    borderRadius: 5,
-    width: "40%",
-    borderWidth: 1,
-    borderColor: "#32a244",
-    alignItems: "center",
-  },
-  cancelButtonText: {
-    color: "#32a244",
-    fontSize: 16,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  textInput: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 10,
-    marginBottom: 10,
-    width: "100%",
-    backgroundColor: "#f9f9f9",
-    fontSize: 16,
-    color: "#333",
-  },
-  inputContainer: {
-    flexDirection: "column",
-    width: "100%",
-    marginBottom: 20,
-  },
-  inputLabel: {
-    fontSize: 16,
-    marginBottom: 5,
-    color: "#555",
-  },
-  errorText: {
-    color: "red",
-    fontSize: 14,
   },
   borrowedInfoContainer: {
     backgroundColor: "#fff",
@@ -562,9 +544,24 @@ const styles = StyleSheet.create({
   snackbar: {
     position: "absolute",
     bottom: 0,
-    left: 0,
-    right: 0,
-    backgroundColor: "#32a244",
+    backgroundColor: "#333",
+  },
+  dateInfoContainer: {
+    backgroundColor: "#f5f5f5",
+    padding: 15,
+    borderRadius: 8,
+    marginVertical: 15,
+  },
+  dateInfoText: {
+    fontSize: 16,
+    color: "#333",
+    marginBottom: 5,
+  },
+  dateInfoNote: {
+    fontSize: 14,
+    color: "#666",
+    fontStyle: "italic",
+    marginTop: 5,
   },
 });
 

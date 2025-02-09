@@ -16,6 +16,8 @@ const initialState = {
   snackbarMessage: "",
   dropdownVisible: false,
   selectedBook: null,
+  borrowedBooks: [],
+  returnDate: null,
 };
 
 const booksReducer = (state = initialState, action) => {
@@ -35,7 +37,11 @@ const booksReducer = (state = initialState, action) => {
         ...state,
         books: state.books.map((book) =>
           book.id === action.payload.bookId
-            ? { ...book, count: action.payload.count }
+            ? {
+                ...book,
+                count: action.payload.count,
+                lastUpdated: new Date().toISOString(),
+              }
             : book
         ),
       };
@@ -148,6 +154,30 @@ const booksReducer = (state = initialState, action) => {
       return {
         ...state,
         selectedBook: action.payload,
+      };
+
+    case actionTypes.BORROW_BOOK:
+      const borrowDate = new Date();
+      const returnDate = new Date(borrowDate);
+      returnDate.setDate(borrowDate.getDate() + 28); // 4 weeks from borrow date
+
+      return {
+        ...state,
+        borrowedBooks: [
+          ...state.borrowedBooks,
+          {
+            ...action.payload,
+            borrowedDate: borrowDate.toISOString(),
+            returnDate: returnDate.toISOString(),
+            status: "borrowed",
+          },
+        ],
+      };
+
+    case actionTypes.SET_RETURN_DATE:
+      return {
+        ...state,
+        returnDate: action.payload,
       };
 
     default:

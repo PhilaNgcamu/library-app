@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from "react";
+"use client";
+
+import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
   Text,
@@ -6,15 +8,23 @@ import {
   StyleSheet,
   TouchableOpacity,
   ActivityIndicator,
+  Dimensions,
+  Animated,
+  Image,
 } from "react-native";
 import { useSelector } from "react-redux";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+const { width } = Dimensions.get("window");
 
 const GenreScreen = ({ navigation }) => {
   const allBooks = useSelector((state) => state.books.books);
   const [selectedCategory, setSelectedCategory] = useState(null);
   const [loading, setLoading] = useState(true);
   const [categorizedBooks, setCategorizedBooks] = useState({});
+  const [animation] = useState(new Animated.Value(0));
+  const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const categorizeBooksByGenre = () => {
@@ -33,45 +43,79 @@ const GenreScreen = ({ navigation }) => {
     categorizeBooksByGenre();
   }, [allBooks]);
 
-  const renderCategoryItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => setSelectedCategory(item)}
-      style={[
-        styles.categoryItem,
-        selectedCategory === item && styles.selectedCategoryItem,
-      ]}
-    >
-      <Text style={styles.categoryTitle}>{item}</Text>
-    </TouchableOpacity>
+  const handleCategoryPress = useCallback(
+    (category) => {
+      setSelectedCategory(category);
+      Animated.spring(animation, {
+        toValue: 1,
+        useNativeDriver: true,
+        tension: 50,
+        friction: 7,
+      }).start();
+    },
+    [animation]
   );
 
-  const renderBookItem = ({ item }) => (
-    <TouchableOpacity
-      onPress={() => navigation.navigate("Book Details", { bookId: item.id })}
-      style={styles.bookItem}
-    >
-      <Text style={styles.bookTitle}>{item.title}</Text>
-      <Text style={styles.bookAuthor}>{item.author}</Text>
-    </TouchableOpacity>
+  const renderCategoryItem = useCallback(
+    ({ item }) => (
+      <TouchableOpacity
+        onPress={() => handleCategoryPress(item)}
+        style={[
+          styles.categoryItem,
+          selectedCategory === item && styles.selectedCategoryItem,
+        ]}
+      >
+        <Text style={styles.categoryTitle}>{item}</Text>
+      </TouchableOpacity>
+    ),
+    [selectedCategory, handleCategoryPress]
+  );
+
+  const renderBookItem = useCallback(
+    ({ item }) => (
+      <TouchableOpacity
+        onPress={() => navigation.navigate("Book Details", { bookId: item.id })}
+        style={styles.bookItem}
+      >
+        <Image
+          source={{ uri: item.coverImage || "https://via.placeholder.com/150" }}
+          style={styles.bookCover}
+        />
+        <View style={styles.bookInfo}>
+          <Text style={styles.bookTitle} numberOfLines={2}>
+            {item.title}
+          </Text>
+          <Text style={styles.bookAuthor} numberOfLines={1}>
+            {item.author}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    ),
+    [navigation]
   );
 
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color="#32a244" />
-        <Text style={styles.loadingText}>Loading...</Text>
+        <Text style={styles.loadingText}>Loading genres...</Text>
       </View>
     );
   }
 
+  const translateY = animation.interpolate({
+    inputRange: [0, 1],
+    outputRange: [50, 0],
+  });
+
   return (
-    <View style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       {Object.keys(categorizedBooks).length === 0 ? (
         <View style={styles.emptyStateContainer}>
           <MaterialCommunityIcons
             name="book-off-outline"
             size={80}
-            color="gray"
+            color="#000"
           />
           <Text style={styles.emptyStateText}>
             No categories or books available.
@@ -79,46 +123,39 @@ const GenreScreen = ({ navigation }) => {
         </View>
       ) : (
         <>
+          <Text style={styles.screenTitle}>Book Genres</Text>
           <FlatList
             data={Object.keys(categorizedBooks)}
             keyExtractor={(item) => item}
             renderItem={renderCategoryItem}
+            horizontal
+            showsHorizontalScrollIndicator={false}
             contentContainerStyle={styles.categoryListContainer}
             initialNumToRender={10}
             maxToRenderPerBatch={10}
             windowSize={10}
           />
-          {selectedCategory && (
-            <View style={styles.bookListContainer}>
-              {categorizedBooks[selectedCategory].length === 1 ? (
-                <TouchableOpacity
-                  onPress={() =>
-                    navigation.navigate("Book Details", {
-                      bookId: categorizedBooks[selectedCategory][0].id,
-                    })
-                  }
-                  style={styles.singleBookItem}
-                >
-                  <Text style={styles.singleBookTitle}>
-                    {categorizedBooks[selectedCategory][0].title}
-                  </Text>
-                  <Text style={styles.singleBookAuthor}>
-                    {categorizedBooks[selectedCategory][0].author}
-                  </Text>
-                </TouchableOpacity>
-              ) : (
+          <Animated.View
+            style={[styles.bookListContainer, { transform: [{ translateY }] }]}
+          >
+            {selectedCategory && (
+              <>
+                <Text style={styles.selectedCategoryTitle}>
+                  {selectedCategory}
+                </Text>
                 <FlatList
                   data={categorizedBooks[selectedCategory]}
                   keyExtractor={(item) => item.id.toString()}
                   renderItem={renderBookItem}
+                  numColumns={2}
                   initialNumToRender={10}
                   maxToRenderPerBatch={10}
                   windowSize={10}
                   contentContainerStyle={styles.booksContainer}
                 />
-              )}
-            </View>
-          )}
+              </>
+            )}
+          </Animated.View>
         </>
       )}
     </View>
@@ -128,7 +165,6 @@ const GenreScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
     backgroundColor: "#f7f7f7",
   },
   loadingContainer: {
@@ -152,77 +188,80 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 10,
   },
+  screenTitle: {
+    fontSize: 28,
+    fontWeight: "bold",
+    color: "#32a244",
+    marginBottom: 20,
+    paddingHorizontal: 20,
+  },
   categoryListContainer: {
-    paddingBottom: 20,
+    paddingHorizontal: 10,
   },
   categoryItem: {
     backgroundColor: "#32a244",
-    paddingVertical: 15,
+    paddingVertical: 12,
     paddingHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 10,
+    marginHorizontal: 10,
+    borderRadius: 25,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   selectedCategoryItem: {
     backgroundColor: "#1e7f57",
   },
   categoryTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#fff",
   },
   bookListContainer: {
-    flexGrow: 1,
+    flex: 1,
+    marginTop: 20,
+  },
+  selectedCategoryTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 15,
+    paddingHorizontal: 20,
   },
   booksContainer: {
-    paddingVertical: 10,
+    paddingHorizontal: 10,
   },
   bookItem: {
     backgroundColor: "#fff",
-    padding: 15,
     borderRadius: 10,
     marginBottom: 15,
+    marginHorizontal: 10,
+    width: (width - 60) / 2,
     shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+    overflow: "hidden",
+  },
+  bookCover: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
+  },
+  bookInfo: {
+    padding: 10,
   },
   bookTitle: {
-    fontSize: 18,
+    fontSize: 16,
     fontWeight: "bold",
     color: "#333",
+    marginBottom: 5,
   },
   bookAuthor: {
-    fontSize: 16,
+    fontSize: 14,
     color: "#777",
-    marginTop: 5,
-  },
-  singleBookItem: {
-    backgroundColor: "#fff",
-    padding: 15,
-    borderRadius: 10,
-    marginBottom: 15,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-  },
-  singleBookTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    color: "#333",
-  },
-  singleBookAuthor: {
-    fontSize: 16,
-    color: "#777",
-    marginTop: 5,
   },
 });
 

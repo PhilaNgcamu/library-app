@@ -1,18 +1,16 @@
 import React from "react";
 import { Provider } from "react-redux";
 import store from "./redux/store";
-import { GluestackUIProvider } from "@gluestack-ui/themed";
-import { config } from "@gluestack-ui/config";
-
 import NavigationApp from "./screens/Navigation";
+import { AuthProvider } from "./contexts/AuthContext";
 
 const App = () => {
   return (
-    <Provider store={store}>
-      <GluestackUIProvider config={config}>
+    <AuthProvider>
+      <Provider store={store}>
         <NavigationApp />
-      </GluestackUIProvider>
-    </Provider>
+      </Provider>
+    </AuthProvider>
   );
 };
 

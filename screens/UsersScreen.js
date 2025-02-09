@@ -7,30 +7,60 @@ import {
   TouchableOpacity,
 } from "react-native";
 import { ref, onValue } from "firebase/database";
-import { database } from "../backend/firestoreConfig";
+import { database } from "../services/firebase/config";
 import { useNavigation } from "@react-navigation/native";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const UsersScreen = () => {
   const [usersWithBooks, setUsersWithBooks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
   const navigation = useNavigation();
 
   useEffect(() => {
-    const borrowedBooksRef = ref(database, "borrowedBooks");
-    onValue(borrowedBooksRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        const borrowedBooksArray = Object.values(data);
-        setUsersWithBooks(borrowedBooksArray);
+    let unsubscribe;
+    try {
+      const borrowedBooksRef = ref(database, "borrowedBooks");
+      unsubscribe = onValue(
+        borrowedBooksRef,
+        (snapshot) => {
+          const data = snapshot.val();
+          if (data) {
+            const borrowedBooksArray = Object.values(data);
+            setUsersWithBooks(borrowedBooksArray);
+          } else {
+            setUsersWithBooks([]);
+          }
+          setIsLoading(false);
+        },
+        (error) => {
+          console.error("Firebase error:", error);
+          setIsLoading(false);
+        }
+      );
+    } catch (error) {
+      console.error("Setup error:", error);
+      setIsLoading(false);
+    }
+
+    return () => {
+      if (unsubscribe) {
+        unsubscribe();
       }
-    });
+    };
   }, []);
+
+  const formatUserName = (user) => {
+    if (!user.memberName && !user.memberSurname) {
+      return "Anonymous User";
+    }
+    return `${user.memberName || ""} ${user.memberSurname || ""}`.trim();
+  };
 
   const handleViewBorrowingDetails = (user) => {
     navigation.navigate("Borrowing Details", {
-      memberName: user.memberName,
-      memberSurname: user.memberSurname,
+      memberName: user.memberName || "Anonymous",
+      memberSurname: user.memberSurname || "User",
       borrowedDate: user.borrowedDate,
       returnDate: user.returnDate,
       bookItem: user.book.title,
@@ -40,7 +70,11 @@ const UsersScreen = () => {
 
   return (
     <View style={styles.container}>
-      {usersWithBooks.length === 0 ? (
+      {isLoading ? (
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Loading...</Text>
+        </View>
+      ) : usersWithBooks.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MaterialCommunityIcons
             name="book-off-outline"
@@ -57,8 +91,15 @@ const UsersScreen = () => {
                 style={styles.userDetails}
                 onPress={() => handleViewBorrowingDetails(user)}
               >
-                <Text style={styles.userName}>
-                  {user.memberName} {user.memberSurname}
+                <Text
+                  style={[
+                    styles.userName,
+                    !user.memberName &&
+                      !user.memberSurname &&
+                      styles.anonymousUser,
+                  ]}
+                >
+                  {formatUserName(user)}
                 </Text>
                 <Text style={styles.bookTitle}>{user.book.title}</Text>
                 <Text style={styles.bookAuthor}>by {user.book.author}</Text>
@@ -66,7 +107,6 @@ const UsersScreen = () => {
                   Borrowed: {user.borrowedDate} - Return: {user.returnDate}
                 </Text>
               </TouchableOpacity>
-
               <AntDesign name="arrowright" size={24} color="gray" />
             </View>
           ))}
@@ -140,6 +180,20 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyText: {
+    fontSize: 18,
+    color: "gray",
+    marginTop: 20,
+  },
+  anonymousUser: {
+    color: "#888",
+    fontStyle: "italic",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  loadingText: {
     fontSize: 18,
     color: "gray",
     marginTop: 20,

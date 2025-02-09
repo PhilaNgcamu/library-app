@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState, useRef } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
   View,
   Text,
@@ -9,10 +9,10 @@ import {
   Modal,
   TouchableWithoutFeedback,
   FlatList,
+  ActivityIndicator,
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigation } from "@react-navigation/native";
-import { Button, ButtonText } from "@gluestack-ui/themed";
 import { Picker } from "@react-native-picker/picker";
 import { AntDesign } from "@expo/vector-icons";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -42,12 +42,27 @@ const BookManagementScreen = () => {
   const books = useSelector((state) => state.books.books);
 
   const [isExtended, setIsExtended] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
 
   useEffect(() => {
-    dispatch(fetchBooks());
+    const fetchBooksData = async () => {
+      try {
+        setIsLoading(true);
+        setError(null);
+        await dispatch(fetchBooks());
+      } catch (err) {
+        setError("Failed to load books");
+        console.error(err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchBooksData();
   }, [dispatch]);
 
   const renderEmptyState = () => {
@@ -84,9 +99,11 @@ const BookManagementScreen = () => {
   }, [filteredBooks, sortBy]);
 
   const searchedBooks = useMemo(() => {
-    return sortedBooks.filter((book) =>
-      book.title.toLowerCase().includes(searchQuery.toLowerCase().trim())
-    );
+    return sortedBooks.filter((book) => {
+      const bookTitle = book?.title || "";
+      const searchTerm = searchQuery?.toLowerCase().trim() || "";
+      return bookTitle.toLowerCase().includes(searchTerm);
+    });
   }, [sortedBooks, searchQuery]);
 
   const handleViewDetails = (bookId) => {
@@ -138,40 +155,37 @@ const BookManagementScreen = () => {
     navigation.navigate("Scan Bookcode");
   };
 
-  const renderBookItem = ({ item }) => {
-    return (
-      <TouchableOpacity
-        style={styles.bookItem}
-        onPress={() => handleViewDetails(item.id)}
-        onLongPress={() => handleLongPress(item)}
-        activeOpacity={1}
-      >
-        <Image
-          source={{ uri: item.coverUrl }}
-          style={styles.bookCover}
-          resizeMode="cover"
-        />
-        {item.count > 0 ? (
-          <View style={styles.tagContainer}>
-            <Text style={styles.tagText}>Available</Text>
-          </View>
-        ) : (
-          <View style={[styles.tagContainer, { backgroundColor: "#ff8080" }]}>
-            <Text style={styles.tagText}>Not Available</Text>
-          </View>
-        )}
-        <View style={styles.bookInfoContainer}>
-          <Text style={styles.bookTitle}>{item.title}</Text>
-          <Text style={styles.bookAuthor}>by {item.author}</Text>
-          <Text style={styles.bookCount}>Books left: {item.count}</Text>
+  const renderBookItem = ({ item }) => (
+    <TouchableOpacity
+      style={styles.bookItem}
+      onPress={() => handleViewDetails(item.id)}
+      onLongPress={() => handleLongPress(item)}
+      activeOpacity={1}
+    >
+      <Image
+        source={{ uri: item.coverUrl }}
+        style={styles.bookCover}
+        resizeMode="cover"
+      />
+      {item.count > 0 ? (
+        <View style={styles.tagContainer}>
+          <Text style={styles.tagText}>Available</Text>
         </View>
-      </TouchableOpacity>
-    );
-  };
+      ) : (
+        <View style={[styles.tagContainer, { backgroundColor: "#ff8080" }]}>
+          <Text style={styles.tagText}>Not Available</Text>
+        </View>
+      )}
+      <View style={styles.bookInfoContainer}>
+        <Text style={styles.bookTitle}>{item.title}</Text>
+        <Text style={styles.bookAuthor}>by {item.author}</Text>
+        <Text style={styles.bookCount}>Books left: {item.count}</Text>
+      </View>
+    </TouchableOpacity>
+  );
 
   const onScroll = ({ nativeEvent }) => {
-    const currentScrollPosition =
-      Math.floor(nativeEvent?.contentOffset?.y) ?? 0;
+    const currentScrollPosition = Math.floor(nativeEvent.contentOffset.y) ?? 0;
     setIsExtended(currentScrollPosition <= 0);
   };
 
@@ -179,70 +193,70 @@ const BookManagementScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchContainer}>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Search books..."
-          value={searchQuery}
-          onChangeText={(search) => {
-            dispatch(searchQueryKeyword(search));
-          }}
-          onSubmitEditing={handleSearch}
-        />
-        <Button
-          style={{
-            backgroundColor: "#32a244",
-            textAlign: "center",
-          }}
-          onPress={handleSearch}
-        >
-          <AntDesign name="search1" size={24} color="white" />
-        </Button>
-      </View>
+      {error ? (
+        <View style={styles.errorContainer}>
+          <Text style={styles.errorText}>{error}</Text>
+          <TouchableOpacity
+            style={styles.retryButton}
+            onPress={() => dispatch(fetchBooks())}
+          >
+            <Text style={styles.retryButtonText}>Retry</Text>
+          </TouchableOpacity>
+        </View>
+      ) : isLoading ? (
+        <ActivityIndicator size="large" color="#32a244" />
+      ) : (
+        <View style={styles.searchContainer}>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Search books..."
+            value={searchQuery}
+            onChangeText={(text) => dispatch(searchQueryKeyword(text))}
+          />
+          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
+            <AntDesign name="search1" size={24} color="white" />
+          </TouchableOpacity>
+        </View>
+      )}
 
       <View style={styles.sortFilterContainer}>
         <View style={styles.sortContainer}>
           <Picker
             selectedValue={sortBy}
-            style={{ height: 50, width: 150 }}
-            onValueChange={(itemValue) => handleSort(itemValue)}
+            onValueChange={(value) => handleSort(value)}
           >
-            <Picker.Item label="Sort By Title" value="title" />
-            <Picker.Item label="Sort By Author" value="author" />
-            <Picker.Item label="Sort By Count" value="count" />
-            <Picker.Item label="Sort By Date" value="date" />
+            <Picker.Item label="Sort by Title" value="title" />
+            <Picker.Item label="Sort by Author" value="author" />
+            <Picker.Item label="Sort by Count" value="count" />
+            <Picker.Item label="Sort by Date" value="date" />
           </Picker>
         </View>
         <View style={styles.filterContainer}>
           <Picker
             selectedValue={filterBy}
-            style={{ height: 50, width: 150 }}
-            onValueChange={(itemValue) => handleFilter(itemValue)}
+            onValueChange={(value) => handleFilter(value)}
           >
-            <Picker.Item label="Show All Books" value="all" />
-            <Picker.Item label="Filter By Availability" value="availability" />
+            <Picker.Item label="All Books" value="all" />
+            <Picker.Item label="Available" value="availability" />
           </Picker>
         </View>
       </View>
 
-      {books.length === 0 ||
-      searchedBooks.length === 0 ||
-      allBooksUnavailable ? (
+      {searchedBooks.length === 0 ? (
         renderEmptyState()
       ) : (
         <FlatList
           data={searchedBooks}
           renderItem={renderBookItem}
           keyExtractor={(item) => item.id.toString()}
-          numColumns={2}
           contentContainerStyle={styles.bookList}
-          extraData={books}
+          numColumns={2}
           onScroll={onScroll}
+          scrollEventThrottle={200}
         />
       )}
 
       <Modal
-        animationType="slide"
         transparent={true}
         visible={dropdownVisible}
         onRequestClose={() => dispatch(setDropdownVisible(false))}
@@ -254,24 +268,9 @@ const BookManagementScreen = () => {
             <View style={styles.dropdown}>
               <TouchableOpacity
                 style={styles.dropdownItem}
-                onPress={() => {
-                  handleViewDetails(selectedBook.id);
-                  dispatch(setDropdownVisible(false));
-                }}
+                onPress={() => handleDeleteBook(selectedBook?.id)}
               >
-                <Text style={styles.dropdownItemText}>View Details</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => {
-                  handleDeleteBook(selectedBook.id);
-                  dispatch(setDropdownVisible(false));
-                }}
-              >
-                <Text style={(styles.dropdownItemText, { color: "red" })}>
-                  Delete
-                </Text>
+                <Text style={styles.dropdownItemText}>Delete Book</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -279,51 +278,40 @@ const BookManagementScreen = () => {
       </Modal>
 
       <Modal
-        animationType="slide"
         transparent={true}
         visible={noBooksModal}
-        onRequestClose={() => dispatch(showNoBooksModal())}
+        onRequestClose={() => dispatch(showNoBooksModal(false))}
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text
-              style={{
-                fontSize: 20,
-                fontWeight: "bold",
-                marginBottom: 10,
-              }}
-            >
-              Oops!
-            </Text>
             <Text style={styles.modalText}>No books found</Text>
-            <Button
+            <TouchableOpacity
               style={styles.modalButton}
-              onPress={() => dispatch(showNoBooksModal())}
+              onPress={() => dispatch(showNoBooksModal(false))}
             >
-              <ButtonText>Search Again</ButtonText>
-            </Button>
+              <Text style={styles.modalButtonText}>OK</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
 
       <Snackbar
         visible={snackbarVisible}
-        style={{ backgroundColor: "#32a244", zIndex: 1 }}
+        duration={3000}
+        style={styles.snackbar}
         onDismiss={() => dispatch(setSnackbarVisible(false))}
-        duration={2000}
-        action={{
-          textColor: "white",
-          onPress: () => dispatch(setSnackbarVisible(false)),
-        }}
       >
         {snackbarMessage}
       </Snackbar>
+
       <AnimatedFAB
-        style={[styles.fab, fabStyle]}
+        style={[styles.fab]}
         label="Add New Book"
         extended={isExtended}
         icon="plus"
         onPress={handleAddVisitor}
+        animateFrom="right"
+        iconMode="dynamic"
       />
     </View>
   );
@@ -335,90 +323,146 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: "#f0f0f0",
   },
-  bookCover: {
-    width: "100%",
-    aspectRatio: 2 / 3,
-    borderTopLeftRadius: 10,
-    borderTopRightRadius: 10,
-  },
   searchContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 5,
+    gap: 10,
   },
   searchInput: {
     flex: 1,
+    height: 40,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
-    padding: 5,
-    marginRight: 10,
+    borderColor: "#ddd",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    backgroundColor: "#fff",
+  },
+  searchButton: {
+    backgroundColor: "#32a244",
+    padding: 8,
+    borderRadius: 8,
   },
   sortFilterContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
     marginBottom: 10,
-    paddingHorizontal: 10,
+    gap: 10,
   },
   sortContainer: {
     flex: 1,
-    marginRight: 5,
+    backgroundColor: "#fff",
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    borderColor: "#ddd",
   },
   filterContainer: {
     flex: 1,
-    marginLeft: 5,
+    backgroundColor: "#fff",
+    borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 5,
+    borderColor: "#ddd",
   },
   bookList: {
-    paddingBottom: 20,
+    paddingBottom: 80,
   },
   bookItem: {
     flex: 1,
-    backgroundColor: "white",
-    margin: 10,
+    margin: 5,
+    backgroundColor: "#fff",
     borderRadius: 10,
     overflow: "hidden",
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+  },
+  bookCover: {
+    width: "100%",
+    aspectRatio: 0.7,
+  },
+  bookInfoContainer: {
+    padding: 10,
+  },
+  bookTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    marginBottom: 5,
+  },
+  bookAuthor: {
+    fontSize: 14,
+    color: "#666",
+    marginBottom: 5,
+  },
+  bookCount: {
+    fontSize: 12,
+    color: "#32a244",
   },
   tagContainer: {
     position: "absolute",
     top: 10,
     right: 10,
     backgroundColor: "#32a244",
-    paddingHorizontal: 5,
-    paddingVertical: 2,
-    borderRadius: 5,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 4,
   },
   tagText: {
-    color: "white",
+    color: "#fff",
     fontSize: 12,
+    fontWeight: "bold",
   },
-  bookInfoContainer: {
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  dropdown: {
+    backgroundColor: "#fff",
+    borderRadius: 8,
     padding: 10,
+    width: "80%",
+    elevation: 5,
   },
-  bookTitle: {
-    fontWeight: "bold",
+  dropdownItem: {
+    padding: 15,
+  },
+  dropdownItemText: {
     fontSize: 16,
-    marginBottom: 5,
   },
-  bookAuthor: {
-    color: "#666",
-    marginBottom: 5,
+  modalContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "rgba(0,0,0,0.5)",
   },
-  bookCount: {
-    color: "#666",
-    fontSize: 14,
+  modalContent: {
+    backgroundColor: "#fff",
+    padding: 20,
+    borderRadius: 8,
+    alignItems: "center",
+    elevation: 5,
+  },
+  modalText: {
+    fontSize: 16,
+    marginBottom: 20,
+  },
+  modalButton: {
+    backgroundColor: "#32a244",
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 8,
+  },
+  modalButtonText: {
+    color: "#fff",
+    fontSize: 16,
     fontWeight: "bold",
+  },
+  fab: {
+    position: "absolute",
+    right: 16,
+    bottom: 16,
+    backgroundColor: "#32a244",
+  },
+  snackbar: {
+    backgroundColor: "#333",
   },
   emptyStateContainer: {
     flex: 1,
@@ -429,54 +473,25 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: "#666",
   },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  dropdown: {
-    width: 200,
-    backgroundColor: "white",
-    borderRadius: 5,
-    padding: 10,
-    shadowColor: "#000",
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    shadowOffset: { width: 0, height: 2 },
-    elevation: 2,
-  },
-  dropdownItem: {
-    padding: 10,
-  },
-  dropdownItemText: {
-    fontSize: 16,
-  },
-  modalContainer: {
+  errorContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-    backgroundColor: "rgba(0, 0, 0, 0.5)",
   },
-  modalContent: {
-    backgroundColor: "white",
-    padding: 20,
-    borderRadius: 10,
-    alignItems: "center",
-  },
-  modalText: {
-    fontSize: 16,
+  errorText: {
+    fontSize: 18,
+    color: "#666",
     marginBottom: 20,
   },
-  modalButton: {
+  retryButton: {
     backgroundColor: "#32a244",
     padding: 10,
-    borderRadius: 5,
+    borderRadius: 8,
   },
-  fab: {
-    position: "absolute",
-    backgroundColor: "#32a244",
-    right: 16,
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
   },
 });
 

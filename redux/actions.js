@@ -3,53 +3,22 @@ import actionTypes from "./actionTypes";
 import { database } from "../services/firebase/config";
 
 export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
-  console.log("searchBook action creator called with ISBN:", isbn);
   return async (dispatch, getState) => {
     try {
-      console.log("searchBook thunk executing");
-      const endpoint = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&key=AIzaSyDt1fKruEU3J5Z0j8gWuy3sziVtqCMuf1M`;
-      console.log("Searching ISBN:", endpoint);
+      console.log("Searching for ISBN:", isbn);
+      const endpoint = `https://www.googleapis.com/books/v1/volumes?q=isbn:${isbn}&startIndex=${startIndex}&maxResults=${maxResults}`;
 
       const response = await fetch(endpoint);
       const data = await response.json();
 
       if (!data.items || data.items.length === 0) {
-        // Create a manual entry if book not found in Google Books
-        const book = {
-          id: isbn,
-          title: "Manual Entry",
-          author: "Unknown Author",
-          genre: "Uncategorized",
-          coverUrl: null,
-          description: "No description available",
-          pageCount: "N/A",
-          publishedDate: new Date().toISOString(),
-          language: "unknown",
-          available: true,
-          count: 1,
-          isManualEntry: true,
-          lastUpdated: new Date().toISOString(),
-        };
-
-        // Update Firebase database
-        const booksRef = ref(database, "books");
-        const newBookRef = push(booksRef);
-        await set(newBookRef, book);
-
-        // Update Redux store
-        dispatch({
-          type: actionTypes.ADD_BOOK,
-          payload: { ...book, firebaseId: newBookRef.key },
-        });
-
         dispatch(
           setSnackbarMessage(
-            "Book not found in Google Books. Created manual entry."
+            "Book not found in database. Please try a different ISBN."
           )
         );
         dispatch(setSnackbarVisible(true));
-
-        return isbn;
+        return null;
       }
 
       // Book found in Google Books API
@@ -65,8 +34,36 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
         language,
       } = bookInfo;
 
-      console.log("Book Info:", bookInfo);
+      // Check if book with same title and author exists
+      const existingBooks = getState().books.books;
+      const duplicateBook = existingBooks.find(
+        (book) =>
+          book.title.toLowerCase() === (title || "").toLowerCase() &&
+          book.author.toLowerCase() ===
+            (authors ? authors[0] : "").toLowerCase()
+      );
 
+      if (duplicateBook) {
+        // Increment count of existing book
+        const booksRef = ref(database, "books");
+        const bookRef = ref(database, `books/${duplicateBook.firebaseId}`);
+        await update(bookRef, {
+          count: duplicateBook.count + 1,
+          lastUpdated: new Date().toISOString(),
+        });
+
+        dispatch({
+          type: actionTypes.INCREASE_BOOK_COUNT,
+          payload: { id: duplicateBook.id },
+        });
+
+        dispatch(setSnackbarMessage("Book count increased"));
+        dispatch(setSnackbarVisible(true));
+
+        return duplicateBook.id;
+      }
+
+      // If no duplicate found, create new book
       const book = {
         id: isbn,
         title: title || "Unknown Title",
@@ -93,6 +90,9 @@ export const searchBook = (isbn, startIndex = 0, maxResults = 10) => {
         payload: { ...book, firebaseId: newBookRef.key },
       });
 
+      dispatch(setSnackbarMessage("New book added"));
+      dispatch(setSnackbarVisible(true));
+
       return isbn;
     } catch (error) {
       console.error("Error searching book:", error);
@@ -111,27 +111,35 @@ export const addBook = (book) => ({
 export const fetchBooks = () => {
   return async (dispatch) => {
     try {
+      console.log("Fetching books...");
       const booksRef = ref(database, "books");
       const snapshot = await get(booksRef);
 
-      console.log("Snapshot:", snapshot);
-
       if (snapshot.exists()) {
-        const books = snapshot.val();
-        const booksArray = Object.keys(books).map((key) => ({
-          id: key,
-          ...books[key],
+        const booksData = snapshot.val();
+        const booksArray = Object.entries(booksData).map(([key, value]) => ({
+          ...value,
+          firebaseId: key,
         }));
-
-        console.log("Books Array:", booksArray);
 
         dispatch({
           type: actionTypes.SET_BOOKS,
           payload: booksArray,
         });
+
+        console.log(`Fetched ${booksArray.length} books successfully`);
+        return booksArray;
+      } else {
+        console.log("No books found in database");
+        dispatch({
+          type: actionTypes.SET_BOOKS,
+          payload: [],
+        });
+        return [];
       }
     } catch (error) {
       console.error("Error fetching books:", error);
+      throw error;
     }
   };
 };
@@ -310,55 +318,44 @@ export const borrowBook = (bookData) => {
         borrowedDate: borrowDate.toISOString(),
         returnDate: returnDate.toISOString(),
         status: "borrowed",
-        bookInfo: {
-          title: currentBook.title,
-          author: currentBook.author,
-          isbn: currentBook.id,
-          genre: currentBook.genre,
-          coverUrl: currentBook.coverUrl,
-        },
-        borrowingDetails: {
-          borrowedBy: bookData.memberName + " " + bookData.memberSurname,
-          borrowedAt: borrowDate.toISOString(),
-          dueDate: returnDate.toISOString(),
-          location: bookData.location || "Main Library",
-          notes: bookData.notes || "",
-        },
+        bookId: currentBook.id,
       };
 
       // Add to Firebase
       const borrowedBooksRef = ref(database, "borrowedBooks");
-      await push(borrowedBooksRef, borrowedBook);
+      const newBorrowRef = await push(borrowedBooksRef, borrowedBook);
 
-      // Update book count in Firebase
-      const bookRef = ref(database, `books/${bookData.book.id}`);
+      // Update book count and availability in Firebase
+      const bookRef = ref(database, `books/${currentBook.firebaseId}`);
+      const newCount = currentBook.count - 1;
       await update(bookRef, {
-        count: currentBook.count - 1,
-        available: currentBook.count - 1 > 0,
+        count: newCount,
+        available: newCount > 0,
         lastBorrowed: borrowDate.toISOString(),
-        currentBorrower: borrowedBook.studentInfo,
       });
 
-      // Update Redux store
+      // Update Redux store - decrease book count
       dispatch({
-        type: actionTypes.BORROW_BOOK,
-        payload: borrowedBook,
+        type: actionTypes.DECREASE_BOOK_COUNT,
+        payload: {
+          id: currentBook.id,
+          count: newCount,
+        },
       });
 
-      dispatch(updateBookCount(bookData.book.id, currentBook.count - 1));
-      dispatch(setSnackbarMessage("Book borrowed successfully"));
-      dispatch(setSnackbarVisible(true));
+      // Add borrowed book to store
+      dispatch({
+        type: actionTypes.UPDATE_BORROWED_BOOKS,
+        payload: {
+          ...borrowedBook,
+          id: newBorrowRef.key,
+        },
+      });
+
       return { success: true };
     } catch (error) {
       console.error("Error borrowing book:", error);
-      dispatch(setSnackbarMessage("Error borrowing book"));
-      dispatch(setSnackbarVisible(true));
       return { success: false, error: error.message };
     }
   };
 };
-
-export const setReturnDate = (date) => ({
-  type: actionTypes.SET_RETURN_DATE,
-  payload: date,
-});

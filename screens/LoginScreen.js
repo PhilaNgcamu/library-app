@@ -41,7 +41,7 @@ export default function LoginScreen({ navigation }) {
       setError(
         error.message.replace(/Firebase:|\.|\(auth\/.*\)/g, "").trim() ===
           "Error"
-          ? "Something went wrong. Please try again"
+          ? "Wrong email or password. Please try again"
           : error.message.replace(/Firebase:|\.|\(auth\/.*\)/g, "").trim()
       );
     } finally {

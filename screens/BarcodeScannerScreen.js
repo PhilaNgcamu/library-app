@@ -6,8 +6,9 @@ import {
   ActivityIndicator,
   Dimensions,
   Modal,
-  Button,
   TouchableOpacity,
+  SafeAreaView,
+  StatusBar,
 } from "react-native";
 import { Camera, CameraView } from "expo-camera";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,14 +28,16 @@ import { ref, push, set } from "firebase/database";
 import { database, auth } from "../services/firebase/config";
 import { Snackbar } from "react-native-paper";
 import { useAuth } from "../contexts/AuthContext";
+import { MaterialIcons, Ionicons } from "@expo/vector-icons";
 
-const { width } = Dimensions.get("window");
+const { width, height } = Dimensions.get("window");
 
 const QRCodeScannerScreen = () => {
   const { userRole } = useAuth();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
+  const [scannedIsbn, setScannedIsbn] = useState(null);
 
   const scanned = useSelector((state) => state.books.scanned);
   const hasPermission = useSelector((state) => state.books.hasPermission);
@@ -50,7 +53,7 @@ const QRCodeScannerScreen = () => {
       const { status } = await Camera.requestCameraPermissionsAsync();
       dispatch(setHasPermission(status === "granted"));
     })();
-  }, []);
+  }, [dispatch]); // Added dispatch to dependencies
 
   useFocusEffect(
     useCallback(() => {
@@ -75,38 +78,20 @@ const QRCodeScannerScreen = () => {
         return;
       }
 
-      console.log("ISBN:", isbn);
+      setScannedIsbn(isbn);
+      console.log("ISBN stored:", isbn);
 
-      // First search for the book
-      const bookId = dispatch(searchBook(isbn));
+      const result = await dispatch(searchBook(isbn));
+      await dispatch(fetchBooks());
 
-      // Wait for the books to be fetched
-      dispatch(fetchBooks());
-
-      // Now we can safely get the book data
-      const bookData = books.find((b) => b.id === isbn);
-
-      // Log the scan to Firebase
-      const scanRef = push(ref(database, "books"));
-      await set(scanRef, {
-        isbn: isbn,
-        title: bookData?.title || "Unknown Title",
-        author: bookData?.authors?.[0] || "Unknown Author",
-        scannedBy: auth.currentUser?.uid || "anonymous",
-        scannedAt: new Date().toISOString(),
-        scanType: type,
-        status: "available", // Adding a status field
-        studentData: null, // Initialize student data as null
-        scanLocation: "library", // You can make this configurable if needed
-      });
-
-      if (bookId) {
-        dispatch(isScanModalVisible());
-      } else {
+      if (!result) {
         dispatch(setSnackbarMessage("Book not found in Google Books"));
         dispatch(setSnackbarVisible(true));
         handleScanAgain();
+        return;
       }
+
+      dispatch(isScanModalVisible());
     } catch (error) {
       console.error("Error processing scan:", error);
       dispatch(setSnackbarMessage("Error processing scan. Please try again."));
@@ -129,10 +114,13 @@ const QRCodeScannerScreen = () => {
   };
 
   const handleViewBook = () => {
-    const latestIsbn = storedIsbns[storedIsbns.length - 1];
-    const book = books.find((b) => b.id === latestIsbn);
+    console.log("Current books:", books);
+    console.log("Looking for ISBN:", scannedIsbn);
 
-    if (!book) {
+    const bookData = books.find((b) => b.id === scannedIsbn);
+    console.log("Found book:", bookData);
+
+    if (!bookData) {
       dispatch(
         setSnackbarMessage("Book data not found. Please try scanning again.")
       );
@@ -142,34 +130,37 @@ const QRCodeScannerScreen = () => {
 
     dispatch(isScanModalVisible());
     navigation.navigate("Book Details", {
-      bookId: latestIsbn,
+      bookId: scannedIsbn,
+      book: bookData,
     });
   };
 
   if (hasPermission === null) {
     return (
-      <ActivityIndicator
-        size="large"
-        color="#32a244"
-        style={{
-          flex: 1,
-          justifyContent: "center",
-          alignItems: "center",
-        }}
-      />
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#32a244" />
+      </View>
     );
   }
 
   if (hasPermission === false) {
     return (
       <View style={styles.noPermissionContainer}>
-        <Text>No access to camera</Text>
+        <MaterialIcons name="no-photography" size={80} color="#ff6b6b" />
+        <Text style={styles.noPermissionText}>No access to camera</Text>
+        <TouchableOpacity
+          style={styles.permissionButton}
+          onPress={() => Camera.requestCameraPermissionsAsync()}
+        >
+          <Text style={styles.permissionButtonText}>Grant Permission</Text>
+        </TouchableOpacity>
       </View>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" />
       <CameraView
         style={styles.camera}
         facing={"back"}
@@ -179,10 +170,19 @@ const QRCodeScannerScreen = () => {
           <View style={styles.unfocusedContainer}></View>
           <View style={styles.middleContainer}>
             <View style={styles.unfocusedContainer}></View>
-            <View style={styles.focusedContainer}></View>
+            <View style={styles.focusedContainer}>
+              <View style={styles.scannerFrame}>
+                <View style={styles.scannerLine} />
+              </View>
+            </View>
             <View style={styles.unfocusedContainer}></View>
           </View>
           <View style={styles.unfocusedContainer}></View>
+        </View>
+        <View style={styles.scanInstructionContainer}>
+          <Text style={styles.scanInstructionText}>
+            Scan book barcode to add
+          </Text>
         </View>
       </CameraView>
 
@@ -194,10 +194,11 @@ const QRCodeScannerScreen = () => {
       >
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Book Scanned</Text>
+            <Ionicons name="checkmark-circle" size={60} color="#32a244" />
+            <Text style={styles.modalTitle}>Book Scanned Successfully</Text>
             <Text style={styles.modalText}>
-              The book has been successfully scanned. Do you want to view the
-              book details?
+              The book has been added to the database. What would you like to do
+              next?
             </Text>
             <View style={styles.modalButtons}>
               <TouchableOpacity
@@ -205,14 +206,14 @@ const QRCodeScannerScreen = () => {
                 onPress={handleScanAgain}
               >
                 <Text style={[styles.buttonText, styles.secondaryButtonText]}>
-                  Scan Again
+                  Scan Another
                 </Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={styles.modalButton}
                 onPress={handleViewBook}
               >
-                <Text style={styles.buttonText}>View Book</Text>
+                <Text style={styles.buttonText}>View Book Details</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -223,10 +224,11 @@ const QRCodeScannerScreen = () => {
         visible={snackbarVisible}
         onDismiss={() => dispatch(setSnackbarVisible(false))}
         duration={3000}
+        style={styles.snackbar}
       >
         {snackbarMessage}
       </Snackbar>
-    </View>
+    </SafeAreaView>
   );
 };
 
@@ -235,15 +237,22 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#000",
   },
+  header: {
+    backgroundColor: "#32a244",
+    paddingVertical: 16,
+    paddingHorizontal: 20,
+    alignItems: "center",
+  },
+  headerTitle: {
+    fontSize: 20,
+    fontWeight: "bold",
+    color: "#fff",
+  },
   camera: {
     flex: 1,
   },
   overlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
+    ...StyleSheet.absoluteFillObject,
     justifyContent: "center",
     alignItems: "center",
   },
@@ -258,9 +267,37 @@ const styles = StyleSheet.create({
   focusedContainer: {
     width: width * 0.65,
     height: width * 0.65,
+  },
+  scannerFrame: {
+    ...StyleSheet.absoluteFillObject,
     borderWidth: 2,
     borderColor: "#32a244",
-    backgroundColor: "transparent",
+    borderRadius: 10,
+  },
+  scannerLine: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    width: "100%",
+    height: 2,
+    backgroundColor: "#32a244",
+  },
+  scanInstructionContainer: {
+    position: "absolute",
+    bottom: 40,
+    left: 0,
+    right: 0,
+    alignItems: "center",
+  },
+  scanInstructionText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
+    textAlign: "center",
+    backgroundColor: "rgba(0,0,0,0.7)",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 20,
   },
   modalOverlay: {
     flex: 1,
@@ -269,10 +306,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   modalContent: {
-    width: "80%",
+    width: "85%",
     backgroundColor: "white",
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: 20,
+    padding: 25,
     alignItems: "center",
     shadowColor: "#000",
     shadowOffset: {
@@ -284,16 +321,18 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalTitle: {
-    fontSize: 20,
+    fontSize: 22,
     fontWeight: "bold",
     color: "#333",
-    marginBottom: 15,
+    marginTop: 15,
+    marginBottom: 10,
+    textAlign: "center",
   },
   modalText: {
     fontSize: 16,
     color: "#666",
     textAlign: "center",
-    marginBottom: 20,
+    marginBottom: 25,
     lineHeight: 22,
   },
   modalButtons: {
@@ -303,8 +342,8 @@ const styles = StyleSheet.create({
   },
   modalButton: {
     flex: 1,
-    paddingVertical: 12,
-    borderRadius: 8,
+    paddingVertical: 14,
+    borderRadius: 10,
     marginHorizontal: 5,
     alignItems: "center",
     backgroundColor: "#32a244",
@@ -333,6 +372,19 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     marginHorizontal: 40,
+    marginTop: 20,
+    marginBottom: 30,
+  },
+  permissionButton: {
+    backgroundColor: "#32a244",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+  },
+  permissionButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "600",
   },
   loadingContainer: {
     flex: 1,
@@ -340,27 +392,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#f5f5f5",
   },
-  scannerFrame: {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    width: width * 0.7,
-    height: width * 0.7,
-    transform: [
-      { translateX: -(width * 0.7) / 2 },
-      { translateY: -(width * 0.7) / 2 },
-    ],
-    borderWidth: 2,
-    borderColor: "#32a244",
-    borderRadius: 10,
-  },
-  scannerLine: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    width: "100%",
-    height: 2,
-    backgroundColor: "#32a244",
+  snackbar: {
+    backgroundColor: "#333",
   },
 });
 

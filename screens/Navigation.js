@@ -39,7 +39,11 @@ const StackNavigator = () => {
         }}
       />
       <Stack.Screen name="Book Details" component={ViewBookScreen} />
-      <Stack.Screen name="Scan Bookcode" component={QRCodeScannerScreen} />
+      <Stack.Screen
+        name="Scan Bookcode"
+        component={QRCodeScannerScreen}
+        options={{ headerShown: false }}
+      />
       <Stack.Screen
         name="Borrowing Details"
         component={BorrowingDetailsScreen}

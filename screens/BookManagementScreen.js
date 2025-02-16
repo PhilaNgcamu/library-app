@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState, useCallback } from "react";
 import {
   View,
   Text,
@@ -44,6 +44,7 @@ const BookManagementScreen = () => {
   const [isExtended, setIsExtended] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [refreshing, setRefreshing] = useState(false);
 
   const dispatch = useDispatch();
   const navigation = useNavigation();
@@ -68,7 +69,7 @@ const BookManagementScreen = () => {
   const renderEmptyState = () => {
     return (
       <View style={styles.emptyStateContainer}>
-        <MaterialIcons name="library-books" size={100} color="#32a244" />
+        <MaterialIcons name="library-books" size={100} color="black" />
         <Text style={styles.emptyStateText}>No books available</Text>
       </View>
     );
@@ -85,11 +86,18 @@ const BookManagementScreen = () => {
 
   const sortedBooks = useMemo(() => {
     return [...filteredBooks].sort((a, b) => {
-      const titleA = a?.title || "";
-      const titleB = b?.title || "";
-      return titleA.localeCompare(titleB);
+      if (sortBy === "title") {
+        return a.title.localeCompare(b.title);
+      } else if (sortBy === "author") {
+        return a.author.localeCompare(b.author);
+      } else if (sortBy === "count") {
+        return b.count - a.count;
+      } else if (sortBy === "date") {
+        return new Date(b.date) - new Date(a.date);
+      }
+      return 0;
     });
-  }, [filteredBooks]);
+  }, [filteredBooks, sortBy]);
 
   const searchedBooks = useMemo(() => {
     return sortedBooks.filter((book) => {
@@ -182,6 +190,21 @@ const BookManagementScreen = () => {
     setIsExtended(currentScrollPosition <= 0);
   };
 
+  const onRefresh = useCallback(async () => {
+    setRefreshing(true);
+    setError(null);
+    try {
+      await dispatch(fetchBooks());
+      dispatch(setSnackbarMessage("Books refreshed successfully"));
+      dispatch(setSnackbarVisible(true));
+    } catch (err) {
+      setError("Failed to refresh books");
+      console.error(err);
+    } finally {
+      setRefreshing(false);
+    }
+  }, [dispatch]);
+
   const fabStyle = { bottom: 16 };
 
   return (
@@ -199,113 +222,122 @@ const BookManagementScreen = () => {
       ) : isLoading ? (
         <ActivityIndicator size="large" color="#32a244" />
       ) : (
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Search books..."
-            value={searchQuery}
-            onChangeText={(text) => dispatch(searchQueryKeyword(text))}
-          />
-          <TouchableOpacity style={styles.searchButton} onPress={handleSearch}>
-            <AntDesign name="search1" size={24} color="white" />
-          </TouchableOpacity>
-        </View>
-      )}
-
-      <View style={styles.sortFilterContainer}>
-        <View style={styles.sortContainer}>
-          <Picker
-            selectedValue={sortBy}
-            onValueChange={(value) => handleSort(value)}
-          >
-            <Picker.Item label="Sort by Title" value="title" />
-            <Picker.Item label="Sort by Author" value="author" />
-            <Picker.Item label="Sort by Count" value="count" />
-            <Picker.Item label="Sort by Date" value="date" />
-          </Picker>
-        </View>
-        <View style={styles.filterContainer}>
-          <Picker
-            selectedValue={filterBy}
-            onValueChange={(value) => handleFilter(value)}
-          >
-            <Picker.Item label="All Books" value="all" />
-            <Picker.Item label="Available" value="availability" />
-          </Picker>
-        </View>
-      </View>
-
-      {searchedBooks.length === 0 ? (
-        renderEmptyState()
-      ) : (
-        <FlatList
-          data={searchedBooks}
-          renderItem={renderBookItem}
-          keyExtractor={(item) => item.id.toString()}
-          contentContainerStyle={styles.bookList}
-          numColumns={2}
-          onScroll={onScroll}
-          scrollEventThrottle={200}
-        />
-      )}
-
-      <Modal
-        transparent={true}
-        visible={dropdownVisible}
-        onRequestClose={() => dispatch(setDropdownVisible(false))}
-      >
-        <TouchableWithoutFeedback
-          onPress={() => dispatch(setDropdownVisible(false))}
-        >
-          <View style={styles.modalOverlay}>
-            <View style={styles.dropdown}>
-              <TouchableOpacity
-                style={styles.dropdownItem}
-                onPress={() => handleDeleteBook(selectedBook?.id)}
-              >
-                <Text style={styles.dropdownItemText}>Delete Book</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </TouchableWithoutFeedback>
-      </Modal>
-
-      <Modal
-        transparent={true}
-        visible={noBooksModal}
-        onRequestClose={() => dispatch(showNoBooksModal(false))}
-      >
-        <View style={styles.modalContainer}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalText}>No books found</Text>
+        <>
+          <View style={styles.searchContainer}>
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Search books..."
+              value={searchQuery}
+              onChangeText={(text) => dispatch(searchQueryKeyword(text))}
+            />
             <TouchableOpacity
-              style={styles.modalButton}
-              onPress={() => dispatch(showNoBooksModal(false))}
+              style={styles.searchButton}
+              onPress={handleSearch}
             >
-              <Text style={styles.modalButtonText}>OK</Text>
+              <AntDesign name="search1" size={24} color="white" />
             </TouchableOpacity>
           </View>
-        </View>
-      </Modal>
 
-      <Snackbar
-        visible={snackbarVisible}
-        duration={3000}
-        style={styles.snackbar}
-        onDismiss={() => dispatch(setSnackbarVisible(false))}
-      >
-        {snackbarMessage}
-      </Snackbar>
+          <View style={styles.sortFilterContainer}>
+            <View style={styles.sortContainer}>
+              <Picker
+                selectedValue={sortBy}
+                onValueChange={(value) => handleSort(value)}
+              >
+                <Picker.Item label="Sort by Title" value="title" />
+                <Picker.Item label="Sort by Author" value="author" />
+                <Picker.Item label="Sort by Count" value="count" />
+                <Picker.Item label="Sort by Date" value="date" />
+              </Picker>
+            </View>
+            <View style={styles.filterContainer}>
+              <Picker
+                selectedValue={filterBy}
+                onValueChange={(value) => handleFilter(value)}
+              >
+                <Picker.Item label="All Books" value="all" />
+                <Picker.Item label="Available" value="availability" />
+              </Picker>
+            </View>
+          </View>
 
-      <AnimatedFAB
-        style={[styles.fab]}
-        label="Add New Book"
-        extended={isExtended}
-        icon="plus"
-        onPress={handleAddVisitor}
-        animateFrom="right"
-        iconMode="dynamic"
-      />
+          {searchedBooks.length === 0 ? (
+            renderEmptyState()
+          ) : (
+            <FlatList
+              data={searchedBooks}
+              renderItem={renderBookItem}
+              keyExtractor={(item) =>
+                item?.id?.toString() || Math.random().toString()
+              }
+              contentContainerStyle={styles.bookList}
+              numColumns={2}
+              onScroll={onScroll}
+              scrollEventThrottle={200}
+              refreshing={refreshing}
+              onRefresh={onRefresh}
+            />
+          )}
+
+          <Modal
+            transparent={true}
+            visible={dropdownVisible}
+            onRequestClose={() => dispatch(setDropdownVisible(false))}
+          >
+            <TouchableWithoutFeedback
+              onPress={() => dispatch(setDropdownVisible(false))}
+            >
+              <View style={styles.modalOverlay}>
+                <View style={styles.dropdown}>
+                  <TouchableOpacity
+                    style={styles.dropdownItem}
+                    onPress={() => handleDeleteBook(selectedBook?.id)}
+                  >
+                    <Text style={styles.dropdownItemText}>Delete Book</Text>
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </Modal>
+
+          <Modal
+            transparent={true}
+            visible={noBooksModal}
+            onRequestClose={() => dispatch(showNoBooksModal(false))}
+          >
+            <View style={styles.modalContainer}>
+              <View style={styles.modalContent}>
+                <Text style={styles.modalText}>No books found</Text>
+                <TouchableOpacity
+                  style={styles.modalButton}
+                  onPress={() => dispatch(showNoBooksModal(false))}
+                >
+                  <Text style={styles.modalButtonText}>OK</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </Modal>
+
+          <Snackbar
+            visible={snackbarVisible}
+            duration={3000}
+            style={styles.snackbar}
+            onDismiss={() => dispatch(setSnackbarVisible(false))}
+          >
+            {snackbarMessage}
+          </Snackbar>
+
+          <AnimatedFAB
+            style={[styles.fab]}
+            label="Add New Book"
+            extended={isExtended}
+            icon="plus"
+            onPress={handleAddVisitor}
+            animateFrom="right"
+            iconMode="dynamic"
+          />
+        </>
+      )}
     </View>
   );
 };
@@ -463,7 +495,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyStateText: {
-    marginTop: 20,
     fontSize: 18,
     color: "#666",
   },

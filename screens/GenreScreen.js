@@ -70,7 +70,19 @@ const GenreScreen = ({ navigation }) => {
           selectedCategory === item && styles.selectedCategoryItem,
         ]}
       >
-        <Text style={styles.categoryTitle}>{item}</Text>
+        <MaterialCommunityIcons
+          name="bookmark"
+          size={24}
+          color={selectedCategory === item ? "#fff" : "#666"}
+        />
+        <Text
+          style={[
+            styles.categoryTitle,
+            selectedCategory === item && styles.selectedCategoryTitle,
+          ]}
+        >
+          {item}
+        </Text>
       </TouchableOpacity>
     ),
     [selectedCategory, handleCategoryPress]
@@ -83,9 +95,10 @@ const GenreScreen = ({ navigation }) => {
         style={styles.bookItem}
       >
         <Image
-          source={{ uri: item.coverImage || "https://via.placeholder.com/150" }}
+          source={{ uri: item.coverUrl || "https://via.placeholder.com/150" }}
           style={styles.bookCover}
         />
+        <View style={styles.overlay} />
         <View style={styles.bookInfo}>
           <Text style={styles.bookTitle} numberOfLines={2}>
             {item.title}
@@ -146,41 +159,39 @@ const GenreScreen = ({ navigation }) => {
           </Text>
         </View>
       ) : (
-        <>
-          <Text style={styles.screenTitle}>Book Genres</Text>
-          <FlatList
-            data={Object.keys(categorizedBooks)}
-            keyExtractor={(item) => item}
-            renderItem={renderCategoryItem}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.categoryListContainer}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            windowSize={10}
-          />
+        <View style={styles.content}>
+          <Text style={styles.headerTitle}>Explore Genres</Text>
+          <View style={styles.categoriesWrapper}>
+            <FlatList
+              data={Object.keys(categorizedBooks)}
+              keyExtractor={(item) => item}
+              renderItem={renderCategoryItem}
+              horizontal={false}
+              numColumns={2}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.categoryListContainer}
+              initialNumToRender={6}
+              maxToRenderPerBatch={6}
+            />
+          </View>
+
           <Animated.View
             style={[styles.bookListContainer, { transform: [{ translateY }] }]}
           >
             {selectedCategory && (
-              <>
-                <Text style={styles.selectedCategoryTitle}>
-                  {selectedCategory}
-                </Text>
-                <FlatList
-                  data={categorizedBooks[selectedCategory]}
-                  keyExtractor={(item) => item.id.toString()}
-                  renderItem={renderBookItem}
-                  numColumns={2}
-                  initialNumToRender={10}
-                  maxToRenderPerBatch={10}
-                  windowSize={10}
-                  contentContainerStyle={styles.booksContainer}
-                />
-              </>
+              <FlatList
+                data={categorizedBooks[selectedCategory]}
+                keyExtractor={(item) => item.id.toString()}
+                renderItem={renderBookItem}
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.booksContainer}
+                initialNumToRender={4}
+                maxToRenderPerBatch={4}
+              />
             )}
           </Animated.View>
-        </>
+        </View>
       )}
     </View>
   );
@@ -189,7 +200,95 @@ const GenreScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#f7f7f7",
+    backgroundColor: "#ffffff",
+  },
+  content: {
+    flex: 1,
+    paddingHorizontal: 20,
+  },
+  headerTitle: {
+    fontSize: 32,
+    fontWeight: "bold",
+    color: "#333",
+    marginVertical: 20,
+  },
+  categoriesWrapper: {
+    flex: 1,
+    maxHeight: "50%",
+  },
+  categoryListContainer: {
+    paddingVertical: 10,
+  },
+  categoryItem: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+    margin: 6,
+    padding: 15,
+    borderRadius: 12,
+    minWidth: (width - 60) / 2,
+  },
+  selectedCategoryItem: {
+    backgroundColor: "#32a244",
+  },
+  categoryTitle: {
+    fontSize: 16,
+    fontWeight: "600",
+    color: "#666",
+    marginLeft: 10,
+  },
+  selectedCategoryTitle: {
+    color: "#fff",
+  },
+  bookListContainer: {
+    marginTop: 20,
+    height: 280,
+  },
+  booksContainer: {
+    paddingRight: 25,
+    marginBottom: 20,
+  },
+  bookItem: {
+    width: 160,
+    marginRight: 15,
+    borderRadius: 12,
+    overflow: "hidden",
+    position: "relative",
+  },
+  bookCover: {
+    width: "100%",
+    height: 280,
+    resizeMode: "cover",
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0,0,0,0.3)",
+    zIndex: 1,
+  },
+  bookInfo: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    padding: 15,
+    zIndex: 2,
+  },
+  bookTitle: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "#fff",
+    marginBottom: 4,
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+  bookAuthor: {
+    fontSize: 14,
+    color: "#fff",
+    textShadowColor: "rgba(0, 0, 0, 0.75)",
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
   },
   loadingContainer: {
     flex: 1,
@@ -239,81 +338,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     marginTop: 20,
     paddingHorizontal: 30,
-  },
-  screenTitle: {
-    fontSize: 28,
-    fontWeight: "bold",
-    color: "#32a244",
-    marginBottom: 20,
-    paddingHorizontal: 20,
-  },
-  categoryListContainer: {
-    paddingHorizontal: 10,
-  },
-  categoryItem: {
-    backgroundColor: "#32a244",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    marginHorizontal: 6,
-    borderRadius: 25,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  selectedCategoryItem: {
-    backgroundColor: "#1e7f57",
-  },
-  categoryTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  bookListContainer: {
-    flex: 1,
-    marginTop: 20,
-  },
-  selectedCategoryTitle: {
-    fontSize: 22,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 15,
-    paddingHorizontal: 20,
-  },
-  booksContainer: {
-    paddingHorizontal: 10,
-  },
-  bookItem: {
-    backgroundColor: "#fff",
-    borderRadius: 10,
-    marginBottom: 15,
-    marginHorizontal: 6,
-    width: (width - 60) / 2,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    overflow: "hidden",
-  },
-  bookCover: {
-    width: "100%",
-    height: 200,
-    resizeMode: "cover",
-  },
-  bookInfo: {
-    padding: 10,
-  },
-  bookTitle: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "#333",
-    marginBottom: 5,
-  },
-  bookAuthor: {
-    fontSize: 14,
-    color: "#666",
   },
 });
 

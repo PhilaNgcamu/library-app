@@ -13,10 +13,8 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
 import { Snackbar } from "react-native-paper";
-import DateTimePicker from "@react-native-community/datetimepicker";
 import {
   updateBookAvailability,
-  setSnackbarVisible,
   setSnackbarMessage,
   borrowBook,
 } from "../redux/actions";
@@ -33,15 +31,9 @@ const ViewBookScreen = ({ navigation, route }) => {
   const [memberSurname, setMemberSurname] = useState("");
   const [memberNameError, setMemberNameError] = useState("");
   const [memberSurnameError, setMemberSurnameError] = useState("");
-  const [borrowedDateError, setBorrowedDateError] = useState("");
-  const [returnDateError, setReturnDateError] = useState("");
   const book = useSelector((state) =>
     state.books.books.find((book) => book.id === bookId)
   );
-  const [borrowedDate, setBorrowedDate] = useState(new Date());
-  const [returnDate, setReturnDate] = useState(new Date());
-  const [showBorrowedDatePicker, setShowBorrowedDatePicker] = useState(false);
-  const [showReturnDatePicker, setShowReturnDatePicker] = useState(false);
   const [borrowedBooks, setBorrowedBooks] = useState([]);
   const [showMoreUsers, setShowMoreUsers] = useState(false);
   const snackbarMessage = useSelector((state) => state.books.snackbarMessage);
@@ -49,7 +41,6 @@ const ViewBookScreen = ({ navigation, route }) => {
   useEffect(() => {
     if (!book) {
       dispatch(setSnackbarMessage("Book not found"));
-      dispatch(setSnackbarVisible(true));
       navigation.goBack();
     }
   }, [book, bookId]);
@@ -82,8 +73,6 @@ const ViewBookScreen = ({ navigation, route }) => {
     setIsBorrowing(false);
     setMemberNameError("");
     setMemberSurnameError("");
-    setBorrowedDateError("");
-    setReturnDateError("");
   };
 
   const calculateReturnDate = () => {
@@ -105,8 +94,6 @@ const ViewBookScreen = ({ navigation, route }) => {
     // Clear any previous errors
     setMemberNameError("");
     setMemberSurnameError("");
-    setBorrowedDateError("");
-    setReturnDateError("");
 
     try {
       const borrowedBook = {
@@ -114,41 +101,36 @@ const ViewBookScreen = ({ navigation, route }) => {
           id: book.id,
           title: book.title,
           author: book.author,
-          coverUrl: book.coverUrl, // Add coverUrl for display
+          coverUrl: book.coverUrl,
         },
         memberName: memberName.trim(),
         memberSurname: memberSurname.trim(),
-        borrowedDate: new Date().toISOString(),
-        returnDate: calculateReturnDate().toISOString(),
       };
 
-      dispatch(borrowBook(borrowedBook)).then((result) => {
-        if (result.success) {
+      dispatch(borrowBook(borrowedBook))
+        .then((result) => {
+          if (result.success) {
+            dispatch(setSnackbarMessage("Book borrowed successfully"));
+            setSnackbarVisible(true);
+            closeModal();
+            navigation.goBack();
+          } else {
+            dispatch(
+              setSnackbarMessage(result.error || "Error borrowing book")
+            );
+            setSnackbarVisible(true);
+          }
+        })
+        .catch((error) => {
+          console.error("Error borrowing book:", error);
+          dispatch(setSnackbarMessage("Error borrowing book"));
           setSnackbarVisible(true);
-          closeModal();
-          navigation.goBack();
-        } else {
-          setSnackbarVisible(true);
-        }
-      });
+        });
     } catch (error) {
       console.error("Error borrowing book:", error);
+      dispatch(setSnackbarMessage("Error borrowing book"));
       setSnackbarVisible(true);
     }
-  };
-
-  const handleBorrowedDateChange = (event, selectedDate) => {
-    if (selectedDate !== undefined) {
-      setBorrowedDate(selectedDate);
-    }
-    setShowBorrowedDatePicker(false);
-  };
-
-  const handleReturnDateChange = (event, selectedDate) => {
-    if (selectedDate !== undefined) {
-      setReturnDate(selectedDate);
-    }
-    setShowReturnDatePicker(false);
   };
 
   const navigateToBorrowingDetails = (borrowedBook) => {

@@ -67,7 +67,11 @@ const booksReducer = (state = initialState, action) => {
         ...state,
         books: state.books.map((book) =>
           book.id === action.payload.id
-            ? { ...book, count: book.count - 1, available: book.count - 1 > 0 }
+            ? {
+                ...book,
+                count: action.payload.count,
+                available: action.payload.count > 0,
+              }
             : book
         ),
       };
@@ -178,6 +182,12 @@ const booksReducer = (state = initialState, action) => {
       return {
         ...state,
         returnDate: action.payload,
+      };
+
+    case actionTypes.UPDATE_BORROWED_BOOKS:
+      return {
+        ...state,
+        borrowedBooks: [...state.borrowedBooks, action.payload],
       };
 
     default:

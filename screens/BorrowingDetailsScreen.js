@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -6,51 +6,20 @@ import {
   ScrollView,
   TouchableOpacity,
   Dimensions,
+  Alert,
+  Platform,
+  ActivityIndicator,
 } from "react-native";
 import { AntDesign } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import * as Haptics from "expo-haptics";
+import * as Notifications from "expo-notifications";
+import {
+  registerForPushNotificationsAsync,
+  scheduleBookReminder,
+} from "../services/notifications";
 
 const { width, height } = Dimensions.get("window");
-
-const BookOption = ({ book, memberName, memberSurname, onPress }) => {
-  const borrowedDateObj = new Date(book.borrowedDate);
-  const returnDateObj = new Date(book.returnDate);
-  const currentDateObj = new Date();
-
-  const borrowedDuration = Math.ceil(
-    (returnDateObj - borrowedDateObj) / (1000 * 3600 * 24)
-  );
-
-  const remainingTimeMs = returnDateObj - currentDateObj;
-  const remainingDays = Math.ceil(remainingTimeMs / (1000 * 3600 * 24));
-  const remainingMonths = Math.floor(remainingDays / 30);
-
-  const totalDurationDays = borrowedDuration;
-  const progressPercentage =
-    ((borrowedDuration - remainingDays) / totalDurationDays) * 100;
-
-  return (
-    <TouchableOpacity onPress={onPress} style={styles.bookOption}>
-      <View style={styles.bookInfo}>
-        <Text style={styles.bookTitle}>{book.title}</Text>
-        <Text style={styles.bookAuthor}>{book.author}</Text>
-        <Text style={styles.bookMember}>
-          Borrowed by: {memberName} {memberSurname}
-        </Text>
-      </View>
-      <View style={styles.bookProgress}>
-        <View style={styles.progressBarContainer}>
-          <View
-            style={[styles.progressBar, { width: `${progressPercentage}%` }]}
-          />
-        </View>
-        <Text style={styles.progressValue}>
-          {remainingMonths} months {remainingDays % 30} days remaining
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
-};
 
 const BorrowingDetailsScreen = ({ route }) => {
   const navigation = useNavigation();
@@ -77,24 +46,123 @@ const BorrowingDetailsScreen = ({ route }) => {
   const progressPercentage =
     ((borrowedDuration - remainingDays) / borrowedDuration) * 100;
 
-  const handlePlaceHold = async () => {
+  const [isLoading, setIsLoading] = useState(false);
+  const [expoPushToken, setExpoPushToken] = useState("");
+  const notificationListener = useRef();
+  const responseListener = useRef();
+
+  useEffect(() => {
+    registerForPushNotificationsAsync().then((token) =>
+      setExpoPushToken(token)
+    );
+
+    // Listen for incoming notifications while app is running
+    notificationListener.current =
+      Notifications.addNotificationReceivedListener((notification) => {
+        // Handle received notification
+        console.log("Notification received:", notification);
+      });
+
+    // Listen for user interaction with notification
+    responseListener.current =
+      Notifications.addNotificationResponseReceivedListener((response) => {
+        // Handle user response to notification
+        console.log("User interacted with notification:", response);
+      });
+
+    return () => {
+      Notifications.removeNotificationSubscription(
+        notificationListener.current
+      );
+      Notifications.removeNotificationSubscription(responseListener.current);
+    };
+  }, []);
+
+  const handleBorrow = async () => {
     try {
-      // Add your API call here to place a hold
-      // For example:
-      // await placeHold(bookId, currentUserId);
-      alert(
-        "Hold placed successfully! You will be notified when the book becomes available."
+      setIsLoading(true);
+
+      // Schedule reminders
+      const notificationId = await scheduleBookReminder(bookItem, returnDate);
+
+      // Store the notification ID in Firebase for future reference
+      const borrowRecord = {
+        bookId,
+        memberName,
+        memberSurname,
+        borrowedDate,
+        returnDate,
+        notificationId,
+        expoPushToken,
+      };
+
+      // Add to Firebase
+      const borrowRef = ref(database, "borrowedBooks");
+      await push(borrowRef, borrowRecord);
+
+      // Update Redux store
+      dispatch({
+        type: actionTypes.BORROW_BOOK,
+        payload: borrowRecord,
+      });
+
+      Alert.alert(
+        "Success",
+        "Book borrowed successfully! You will receive reminders before the due date.",
+        [{ text: "OK", onPress: () => navigation.goBack() }]
       );
     } catch (error) {
-      alert("Failed to place hold. Please try again.");
-      console.error("Error placing hold:", error);
+      Alert.alert("Error", "Failed to process the borrowing request.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handlePlaceHold = async () => {
+    try {
+      setIsLoading(true);
+
+      // Request notification permissions
+      const { status } = await Notifications.requestPermissionsAsync();
+      if (status !== "granted") {
+        Alert.alert(
+          "Permission Required",
+          "Please enable notifications to receive reminders"
+        );
+        return;
+      }
+
+      // Schedule a notification for 5 seconds later
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Book Return Reminder",
+          body: `Your book "${bookItem}" by ${author} is due on ${new Date(
+            returnDate
+          ).toLocaleDateString()}`,
+          data: { bookId, returnDate },
+        },
+        trigger: null,
+      });
+    } catch (error) {
+      console.error("Notification error:", error);
+      Alert.alert("Error", "Failed to send test notification");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
       <View style={styles.profileContainer}>
-        <AntDesign name="user" size={width * 0.15} color="#666" />
+        <View style={styles.profileIconContainer}>
+          <AntDesign name="user" size={width * 0.15} color="#32a244" />
+        </View>
+        <View style={styles.profileInfo}>
+          <Text style={styles.profileName}>
+            {memberName} {memberSurname}
+          </Text>
+          <Text style={styles.borrowStatus}>Currently Borrowing</Text>
+        </View>
       </View>
 
       <View style={styles.infoContainer}>
@@ -126,16 +194,36 @@ const BorrowingDetailsScreen = ({ route }) => {
           <Text style={styles.label}>Duration:</Text>
           <Text style={styles.value}>{borrowedDuration} days</Text>
         </View>
-        <View style={styles.progressBarContainer}>
-          <View
-            style={[styles.progressBar, { width: `${progressPercentage}%` }]}
-          />
+        <View style={styles.progressContainer}>
+          <View style={styles.progressBarContainer}>
+            <View
+              style={[styles.progressBar, { width: `${progressPercentage}%` }]}
+            />
+          </View>
+          <View style={styles.progressLabels}>
+            <Text style={styles.progressText}>
+              {Math.round(progressPercentage)}% Complete
+            </Text>
+            <Text
+              style={[
+                styles.progressDays,
+                { color: remainingDays < 7 ? "#ff6b6b" : "#666" },
+              ]}
+            >
+              {remainingDays} days remaining
+            </Text>
+          </View>
         </View>
         <TouchableOpacity
-          style={styles.placeHoldButton}
+          style={[styles.placeHoldButton, isLoading && styles.disabledButton]}
           onPress={handlePlaceHold}
+          disabled={isLoading}
         >
-          <Text style={styles.placeHoldButtonText}>Place Hold</Text>
+          {isLoading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.placeHoldButtonText}>Place Hold</Text>
+          )}
         </TouchableOpacity>
       </View>
     </ScrollView>
@@ -149,28 +237,52 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   profileContainer: {
-    justifyContent: "center",
+    flexDirection: "row",
     alignItems: "center",
-    marginTop: height * 0.03,
-    height: width * 0.35,
-    width: width * 0.35,
-    borderRadius: width * 0.175,
-    backgroundColor: "#f0f0f0",
-    alignSelf: "center",
-    marginBottom: height * 0.05,
+    backgroundColor: "#fff",
+    borderRadius: 15,
+    padding: 20,
+    marginBottom: 20,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  profileIconContainer: {
+    backgroundColor: "#f0f8f1",
+    borderRadius: width * 0.1,
+    padding: 15,
+    marginRight: 15,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: width * 0.05,
+    fontWeight: "bold",
+    color: "#333",
+    marginBottom: 5,
+  },
+  borrowStatus: {
+    fontSize: width * 0.035,
+    color: "#32a244",
   },
   infoContainer: {
     backgroundColor: "#fff",
-    borderRadius: 10,
+    borderRadius: 15,
     padding: 20,
     shadowColor: "#000",
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   infoItem: {
     flexDirection: "row",
@@ -187,17 +299,35 @@ const styles = StyleSheet.create({
     width: "60%",
     color: "#666",
   },
+  progressContainer: {
+    marginTop: 15,
+    marginBottom: 25,
+  },
   progressBarContainer: {
     width: "100%",
-    height: 8,
+    height: 12,
     backgroundColor: "#e0e0e0",
-    borderRadius: 4,
+    borderRadius: 6,
     overflow: "hidden",
-    marginTop: 10,
   },
   progressBar: {
     height: "100%",
     backgroundColor: "#32a244",
+    borderRadius: 6,
+  },
+  progressLabels: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: 8,
+  },
+  progressText: {
+    fontSize: width * 0.035,
+    color: "#32a244",
+    fontWeight: "500",
+  },
+  progressDays: {
+    fontSize: width * 0.035,
+    fontWeight: "500",
   },
   bookOption: {
     flexDirection: "row",
@@ -237,16 +367,27 @@ const styles = StyleSheet.create({
     textAlign: "right",
   },
   placeHoldButton: {
-    backgroundColor: "#4a90e2",
+    backgroundColor: "#32a244",
     padding: 15,
-    borderRadius: 8,
-    marginTop: 20,
+    borderRadius: 10,
+    marginTop: 25,
     alignItems: "center",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
   placeHoldButtonText: {
     color: "#fff",
     fontSize: 16,
     fontWeight: "bold",
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
 });
 

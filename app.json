@@ -32,6 +32,15 @@
       "eas": {
         "projectId": "5b726692-9fb6-438c-a1d1-f368d2a4d629"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/mbc-logo.png",
+          "color": "#ffffff"
+        }
+      ]
+    ]
   }
 }

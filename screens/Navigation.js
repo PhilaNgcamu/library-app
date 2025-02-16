@@ -15,6 +15,7 @@ import SignupScreen from "./SignupScreen";
 import { useAuth } from "../contexts/AuthContext";
 import { TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
+import ForgotPasswordScreen from "./ForgotPasswordScreen";
 
 const Stack = createStackNavigator();
 
@@ -101,7 +102,6 @@ const TabNavigator = () => {
           ),
           headerStyle: {
             backgroundColor: "#32a244",
-            shadowColor: "transparent",
           },
           headerTintColor: "#fff",
           headerTitleStyle: {
@@ -114,6 +114,24 @@ const TabNavigator = () => {
         }}
       />
 
+      <Tab.Screen
+        name="Categories"
+        component={GenreScreen}
+        options={{
+          headerStyle: {
+            backgroundColor: "#32a244",
+          },
+          headerTintColor: "#fff",
+          headerTitleStyle: {
+            fontWeight: "bold",
+          },
+          tabBarLabel: "Categories",
+          tabBarIcon: ({ color, size }) => (
+            <MaterialIcons name="category" color={color} size={size} />
+          ),
+        }}
+      />
+
       {userRole === "admin" && (
         <>
           <Tab.Screen
@@ -122,7 +140,6 @@ const TabNavigator = () => {
             options={{
               headerStyle: {
                 backgroundColor: "#32a244",
-                shadowColor: "transparent",
               },
               headerTintColor: "#fff",
               headerTitleStyle: {
@@ -135,24 +152,6 @@ const TabNavigator = () => {
                   color={color}
                   size={size}
                 />
-              ),
-            }}
-          />
-          <Tab.Screen
-            name="Categories"
-            component={GenreScreen}
-            options={{
-              headerStyle: {
-                backgroundColor: "#32a244",
-                shadowColor: "transparent",
-              },
-              headerTintColor: "#fff",
-              headerTitleStyle: {
-                fontWeight: "bold",
-              },
-              tabBarLabel: "Categories",
-              tabBarIcon: ({ color, size }) => (
-                <MaterialIcons name="category" color={color} size={size} />
               ),
             }}
           />
@@ -169,6 +168,10 @@ const AuthNavigator = () => {
     <AuthStack.Navigator screenOptions={{ headerShown: false }}>
       <AuthStack.Screen name="Login" component={LoginScreen} />
       <AuthStack.Screen name="Signup" component={SignupScreen} />
+      <AuthStack.Screen
+        name="ForgotPassword"
+        component={ForgotPasswordScreen}
+      />
     </AuthStack.Navigator>
   );
 };

@@ -17,33 +17,26 @@ import { useAuth } from "../contexts/AuthContext";
 
 const { width } = Dimensions.get("window");
 
-export default function LoginScreen({ navigation }) {
+export default function ForgotPasswordScreen({ navigation }) {
   const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const { login } = useAuth();
+  const [success, setSuccess] = useState(false);
+  const { resetPassword } = useAuth();
 
-  const handleLogin = async () => {
-    if (!email || !password) {
-      setError("Please fill in all fields");
+  const handleResetPassword = async () => {
+    if (!email) {
+      setError("Please enter your email address");
       return;
     }
 
     try {
       setIsLoading(true);
       setError("");
-      await login(email, password);
-      console.log("Login successful");
+      await resetPassword(email);
+      setSuccess(true);
     } catch (error) {
-      console.error("Login error:", error);
-      setError(
-        error.message.replace(/Firebase:|\.|\(auth\/.*\)/g, "").trim() ===
-          "Error"
-          ? "Something went wrong. Please try again"
-          : error.message.replace(/Firebase:|\.|\(auth\/.*\)/g, "").trim()
-      );
+      setError(error.message.replace(/Firebase:.*|\(auth\/.*\)/g, "").trim());
     } finally {
       setIsLoading(false);
     }
@@ -61,7 +54,12 @@ export default function LoginScreen({ navigation }) {
             style={styles.logo}
             resizeMode="contain"
           />
-          <Text style={styles.title}>Welcome Back</Text>
+          <Text style={styles.title}>Reset Password</Text>
+          <Text style={styles.subtitle}>
+            Enter your email address and we'll send you a link to reset your
+            password.
+          </Text>
+
           <View style={styles.inputContainer}>
             <Ionicons
               name="mail-outline"
@@ -81,55 +79,32 @@ export default function LoginScreen({ navigation }) {
               keyboardType="email-address"
             />
           </View>
-          <View style={styles.inputContainer}>
-            <Ionicons
-              name="lock-closed-outline"
-              size={24}
-              color="#32a244"
-              style={styles.icon}
-            />
-            <TextInput
-              style={styles.input}
-              placeholder="Password"
-              value={password}
-              onChangeText={(text) => {
-                setPassword(text);
-                setError("");
-              }}
-              secureTextEntry={!showPassword}
-            />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-              <Ionicons
-                name={showPassword ? "eye-off-outline" : "eye-outline"}
-                size={24}
-                color="#32a244"
-              />
-            </TouchableOpacity>
-          </View>
+
           {error ? <Text style={styles.errorText}>{error}</Text> : null}
-          <TouchableOpacity
-            style={styles.forgotPasswordButton}
-            onPress={() => navigation.navigate("ForgotPassword")}
-          >
-            <Text style={styles.forgotPasswordText}>Forgot Password?</Text>
-          </TouchableOpacity>
+          {success ? (
+            <Text style={styles.successText}>
+              Password reset email sent! Check your inbox.
+            </Text>
+          ) : null}
+
           <TouchableOpacity
             style={[styles.button, isLoading && styles.buttonDisabled]}
-            onPress={handleLogin}
+            onPress={handleResetPassword}
             disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color="#ffffff" />
             ) : (
-              <Text style={styles.buttonText}>Login</Text>
+              <Text style={styles.buttonText}>Reset Password</Text>
             )}
           </TouchableOpacity>
-          <View style={styles.signupContainer}>
-            <Text style={styles.signupText}>Don't have an account?</Text>
-            <TouchableOpacity onPress={() => navigation.navigate("Signup")}>
-              <Text style={styles.signupLink}>Sign Up</Text>
-            </TouchableOpacity>
-          </View>
+
+          <TouchableOpacity
+            style={styles.backButton}
+            onPress={() => navigation.goBack()}
+          >
+            <Text style={styles.backButtonText}>Back to Login</Text>
+          </TouchableOpacity>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -159,12 +134,24 @@ const styles = StyleSheet.create({
     shadowRadius: 3.84,
     elevation: 5,
   },
+  logo: {
+    width: width * 0.5,
+    height: width * 0.25,
+    marginBottom: 30,
+    alignSelf: "center",
+  },
   title: {
     fontSize: 28,
     fontWeight: "bold",
-    marginBottom: 30,
+    marginBottom: 10,
     textAlign: "center",
     color: "#32a244",
+  },
+  subtitle: {
+    fontSize: 14,
+    color: "#666",
+    textAlign: "center",
+    marginBottom: 30,
   },
   inputContainer: {
     flexDirection: "row",
@@ -197,37 +184,21 @@ const styles = StyleSheet.create({
     backgroundColor: "#68b778",
     opacity: 0.7,
   },
-  forgotPasswordButton: {
-    alignSelf: "flex-end",
-    marginBottom: 20,
+  backButton: {
+    marginTop: 15,
+    alignItems: "center",
   },
-  forgotPasswordText: {
+  backButtonText: {
     color: "#32a244",
     fontSize: 14,
-  },
-  signupContainer: {
-    flexDirection: "row",
-    justifyContent: "center",
-    marginTop: 20,
-  },
-  signupText: {
-    color: "#333",
-    fontSize: 14,
-  },
-  signupLink: {
-    color: "#32a244",
-    fontSize: 14,
-    fontWeight: "bold",
-    marginLeft: 5,
-  },
-  logo: {
-    width: width * 0.5,
-    height: width * 0.25,
-    marginBottom: 30,
-    alignSelf: "center",
   },
   errorText: {
     color: "red",
+    textAlign: "center",
+    marginBottom: 10,
+  },
+  successText: {
+    color: "#32a244",
     textAlign: "center",
     marginBottom: 10,
   },

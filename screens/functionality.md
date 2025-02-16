@@ -4,3 +4,7 @@ The glitch when book is borrowed, ensure once borrowed, not avail status to appl
 Navigation: Books | Users | Category |
 SPLASHSCREEN WHEN LOADING APP WITH CHURCH  
 (Browse by Status(avail and not avail), title, aUTHOR, by date )
+
+-- We have 5 books left
+-- Have a list of people borrowed the book (as admins)
+-- Open source API, for SMSes to remind user to return

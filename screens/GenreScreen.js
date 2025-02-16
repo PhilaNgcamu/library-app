@@ -1,5 +1,3 @@
-"use client";
-
 import React, { useState, useEffect, useCallback } from "react";
 import {
   View,
@@ -24,20 +22,27 @@ const GenreScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(true);
   const [categorizedBooks, setCategorizedBooks] = useState({});
   const [animation] = useState(new Animated.Value(0));
+  const [error, setError] = useState(null);
   const insets = useSafeAreaInsets();
 
   useEffect(() => {
     const categorizeBooksByGenre = () => {
-      const categorizedBooks = {};
-      allBooks.forEach((book) => {
-        if (!categorizedBooks[book.genre]) {
-          categorizedBooks[book.genre] = [];
-        }
-        categorizedBooks[book.genre].push(book);
-      });
+      try {
+        const categorizedBooks = {};
+        allBooks.forEach((book) => {
+          if (!categorizedBooks[book.genre]) {
+            categorizedBooks[book.genre] = [];
+          }
+          categorizedBooks[book.genre].push(book);
+        });
 
-      setCategorizedBooks(categorizedBooks);
-      setLoading(false);
+        setCategorizedBooks(categorizedBooks);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error categorizing books:", error);
+        setError("Failed to load genres. Please try again.");
+        setLoading(false);
+      }
     };
 
     categorizeBooksByGenre();
@@ -103,6 +108,29 @@ const GenreScreen = ({ navigation }) => {
     );
   }
 
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <MaterialCommunityIcons
+          name="alert-circle-outline"
+          size={80}
+          color="#ff6b6b"
+        />
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => {
+            setLoading(true);
+            setError(null);
+            // Implement a retry mechanism here
+          }}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   const translateY = animation.interpolate({
     inputRange: [0, 1],
     outputRange: [50, 0],
@@ -112,13 +140,9 @@ const GenreScreen = ({ navigation }) => {
     <View style={[styles.container, { paddingTop: insets.top }]}>
       {Object.keys(categorizedBooks).length === 0 ? (
         <View style={styles.emptyStateContainer}>
-          <MaterialCommunityIcons
-            name="book-off-outline"
-            size={80}
-            color="#000"
-          />
+          <MaterialCommunityIcons name="bookshelf" size={80} color="#32a244" />
           <Text style={styles.emptyStateText}>
-            No categories or books available.
+            No categories or books available
           </Text>
         </View>
       ) : (
@@ -171,22 +195,50 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f7f7f7",
   },
   loadingText: {
     marginTop: 10,
     fontSize: 18,
     color: "#333",
   },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f7f7f7",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "#ff6b6b",
+    textAlign: "center",
+    marginTop: 20,
+    marginBottom: 20,
+    paddingHorizontal: 30,
+  },
+  retryButton: {
+    backgroundColor: "#32a244",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   emptyStateContainer: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
+    backgroundColor: "#f7f7f7",
   },
   emptyStateText: {
     fontSize: 18,
-    color: "#777",
+    color: "#666",
     textAlign: "center",
-    marginTop: 10,
+    marginTop: 20,
+    paddingHorizontal: 30,
   },
   screenTitle: {
     fontSize: 28,
@@ -202,7 +254,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#32a244",
     paddingVertical: 12,
     paddingHorizontal: 20,
-    marginHorizontal: 10,
+    marginHorizontal: 6,
     borderRadius: 25,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -236,7 +288,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     borderRadius: 10,
     marginBottom: 15,
-    marginHorizontal: 10,
+    marginHorizontal: 6,
     width: (width - 60) / 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -261,7 +313,7 @@ const styles = StyleSheet.create({
   },
   bookAuthor: {
     fontSize: 14,
-    color: "#777",
+    color: "#666",
   },
 });
 

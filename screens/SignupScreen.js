@@ -1,22 +1,21 @@
-"use client";
-
 import React, { useState } from "react";
 import {
   View,
   TextInput,
   TouchableOpacity,
   StyleSheet,
-  Alert,
   Text,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   ActivityIndicator,
+  Image,
+  Dimensions,
 } from "react-native";
-import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../services/firebase/config";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../contexts/AuthContext";
+
+const { width } = Dimensions.get("window");
 
 export default function SignupScreen({ navigation }) {
   const { signup } = useAuth();
@@ -27,20 +26,26 @@ export default function SignupScreen({ navigation }) {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isAdmin, setIsAdmin] = useState(false);
+  const [error, setError] = useState("");
 
   const handleSignup = async () => {
+    if (!email || !password || !confirmPassword) {
+      setError("Please fill in all fields");
+      return;
+    }
+
     if (password !== confirmPassword) {
-      Alert.alert("Error", "Passwords don't match");
+      setError("Passwords don't match");
       return;
     }
 
     try {
       setIsLoading(true);
+      setError("");
       await signup(email, password, isAdmin ? "admin" : "user");
-      Alert.alert("Success", "Account created successfully");
       navigation.navigate("Login");
     } catch (error) {
-      Alert.alert("Error", error.message);
+      setError(error.message.replace(/Firebase:.*|\(auth\/.*\)/g, "").trim());
     } finally {
       setIsLoading(false);
     }
@@ -53,6 +58,11 @@ export default function SignupScreen({ navigation }) {
     >
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.formContainer}>
+          <Image
+            source={require("../assets/mbc-logo.png")}
+            style={styles.logo}
+            resizeMode="contain"
+          />
           <Text style={styles.title}>Create Account</Text>
           <View style={styles.inputContainer}>
             <Ionicons
@@ -65,7 +75,10 @@ export default function SignupScreen({ navigation }) {
               style={styles.input}
               placeholder="Email"
               value={email}
-              onChangeText={setEmail}
+              onChangeText={(text) => {
+                setEmail(text);
+                setError("");
+              }}
               autoCapitalize="none"
               keyboardType="email-address"
             />
@@ -81,7 +94,10 @@ export default function SignupScreen({ navigation }) {
               style={styles.input}
               placeholder="Password"
               value={password}
-              onChangeText={setPassword}
+              onChangeText={(text) => {
+                setPassword(text);
+                setError("");
+              }}
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
@@ -103,7 +119,10 @@ export default function SignupScreen({ navigation }) {
               style={styles.input}
               placeholder="Confirm Password"
               value={confirmPassword}
-              onChangeText={setConfirmPassword}
+              onChangeText={(text) => {
+                setConfirmPassword(text);
+                setError("");
+              }}
               secureTextEntry={!showConfirmPassword}
             />
             <TouchableOpacity
@@ -124,6 +143,7 @@ export default function SignupScreen({ navigation }) {
               Sign up as: {isAdmin ? "Admin" : "User"}
             </Text>
           </TouchableOpacity>
+          {error ? <Text style={styles.errorText}>{error}</Text> : null}
           <TouchableOpacity
             style={[styles.button, isLoading && styles.buttonDisabled]}
             onPress={handleSignup}
@@ -135,13 +155,15 @@ export default function SignupScreen({ navigation }) {
               <Text style={styles.buttonText}>Sign Up</Text>
             )}
           </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.loginLink}
-            onPress={() => navigation.navigate("Login")}
-            disabled={isLoading}
-          >
-            <Text style={styles.loginText}>Already have an account? Login</Text>
-          </TouchableOpacity>
+          <View style={styles.loginContainer}>
+            <Text style={styles.loginText}>Already have an account?</Text>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Login")}
+              disabled={isLoading}
+            >
+              <Text style={styles.loginLink}>Login</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -159,8 +181,8 @@ const styles = StyleSheet.create({
   },
   formContainer: {
     backgroundColor: "#ffffff",
-    borderRadius: 10,
-    padding: 20,
+    borderRadius: 20,
+    padding: 30,
     margin: 20,
     shadowColor: "#000",
     shadowOffset: {
@@ -196,26 +218,33 @@ const styles = StyleSheet.create({
   button: {
     backgroundColor: "#32a244",
     padding: 15,
-    borderRadius: 5,
+    borderRadius: 10,
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 20,
   },
   buttonText: {
     color: "#fff",
     fontSize: 18,
     fontWeight: "bold",
   },
-  loginLink: {
+  buttonDisabled: {
+    backgroundColor: "#68b778",
+    opacity: 0.7,
+  },
+  loginContainer: {
+    flexDirection: "row",
+    justifyContent: "center",
     marginTop: 20,
-    alignItems: "center",
   },
   loginText: {
-    color: "#32a244",
-    fontSize: 16,
+    color: "#333",
+    fontSize: 14,
   },
-  buttonDisabled: {
-    backgroundColor: "#68b778", // lighter green when disabled
-    opacity: 0.7,
+  loginLink: {
+    color: "#32a244",
+    fontSize: 14,
+    fontWeight: "bold",
+    marginLeft: 5,
   },
   roleToggle: {
     padding: 10,
@@ -224,5 +253,17 @@ const styles = StyleSheet.create({
   roleText: {
     color: "#32a244",
     textAlign: "center",
+    fontSize: 16,
+  },
+  logo: {
+    width: width * 0.5,
+    height: width * 0.25,
+    marginBottom: 30,
+    alignSelf: "center",
+  },
+  errorText: {
+    color: "red",
+    textAlign: "center",
+    marginBottom: 10,
   },
 });

@@ -5,16 +5,17 @@ import {
   StyleSheet,
   ScrollView,
   TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
 import { ref, onValue } from "firebase/database";
 import { database } from "../services/firebase/config";
 import { useNavigation } from "@react-navigation/native";
-import { AntDesign } from "@expo/vector-icons";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
+import { AntDesign, MaterialCommunityIcons } from "@expo/vector-icons";
 
 const UsersScreen = () => {
   const [usersWithBooks, setUsersWithBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigation = useNavigation();
 
   useEffect(() => {
@@ -35,11 +36,13 @@ const UsersScreen = () => {
         },
         (error) => {
           console.error("Firebase error:", error);
+          setError("Failed to load borrowed books. Please try again.");
           setIsLoading(false);
         }
       );
     } catch (error) {
       console.error("Setup error:", error);
+      setError("An unexpected error occurred. Please try again.");
       setIsLoading(false);
     }
 
@@ -68,29 +71,58 @@ const UsersScreen = () => {
     });
   };
 
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#32a244" />
+        <Text style={styles.loadingText}>Loading borrowed books...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.errorContainer}>
+        <MaterialCommunityIcons
+          name="alert-circle-outline"
+          size={80}
+          color="#ff6b6b"
+        />
+        <Text style={styles.errorText}>{error}</Text>
+        <TouchableOpacity
+          style={styles.retryButton}
+          onPress={() => {
+            setIsLoading(true);
+            setError(null);
+            // Implement a retry mechanism here
+          }}
+        >
+          <Text style={styles.retryButtonText}>Retry</Text>
+        </TouchableOpacity>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
-      {isLoading ? (
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Loading...</Text>
-        </View>
-      ) : usersWithBooks.length === 0 ? (
+      {usersWithBooks.length === 0 ? (
         <View style={styles.emptyContainer}>
           <MaterialCommunityIcons
-            name="book-off-outline"
+            name="book-open-page-variant"
             size={80}
-            color="gray"
+            color="#32a244"
           />
           <Text style={styles.emptyText}>No borrowed books at the moment</Text>
         </View>
       ) : (
         <ScrollView style={styles.scrollContainer}>
           {usersWithBooks.map((user, index) => (
-            <View key={index} style={styles.userContainer}>
-              <TouchableOpacity
-                style={styles.userDetails}
-                onPress={() => handleViewBorrowingDetails(user)}
-              >
+            <TouchableOpacity
+              key={index}
+              style={styles.userContainer}
+              onPress={() => handleViewBorrowingDetails(user)}
+            >
+              <View style={styles.userDetails}>
                 <Text
                   style={[
                     styles.userName,
@@ -106,9 +138,9 @@ const UsersScreen = () => {
                 <Text style={styles.dates}>
                   Borrowed: {user.borrowedDate} - Return: {user.returnDate}
                 </Text>
-              </TouchableOpacity>
-              <AntDesign name="arrowright" size={24} color="gray" />
-            </View>
+              </View>
+              <AntDesign name="right" size={24} color="#32a244" />
+            </TouchableOpacity>
           ))}
         </ScrollView>
       )}
@@ -122,12 +154,54 @@ const styles = StyleSheet.create({
     backgroundColor: "#f7f7f7",
     padding: 20,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: "bold",
-    marginBottom: 20,
-    textAlign: "center",
+
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f7f7f7",
+  },
+  loadingText: {
+    marginTop: 10,
+    fontSize: 18,
     color: "#333",
+  },
+  errorContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f7f7f7",
+  },
+  errorText: {
+    fontSize: 18,
+    color: "#ff6b6b",
+    textAlign: "center",
+    marginTop: 20,
+    marginBottom: 20,
+    paddingHorizontal: 30,
+  },
+  retryButton: {
+    backgroundColor: "#32a244",
+    paddingVertical: 12,
+    paddingHorizontal: 30,
+    borderRadius: 25,
+  },
+  retryButtonText: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  emptyContainer: {
+    flex: 1,
+    marginTop: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    fontSize: 18,
+    color: "#666",
+    textAlign: "center",
+    marginTop: 20,
   },
   scrollContainer: {
     flex: 1,
@@ -159,44 +233,21 @@ const styles = StyleSheet.create({
   },
   bookTitle: {
     fontSize: 16,
-    color: "#666",
+    color: "#32a244",
     marginBottom: 5,
   },
   bookAuthor: {
     fontSize: 14,
-    color: "#888",
+    color: "#666",
     marginBottom: 10,
   },
   dates: {
     fontSize: 12,
     color: "#999",
   },
-  iconContainer: {
-    marginLeft: 10,
-  },
-  emptyContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  emptyText: {
-    fontSize: 18,
-    color: "gray",
-    marginTop: 20,
-  },
   anonymousUser: {
     color: "#888",
     fontStyle: "italic",
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    fontSize: 18,
-    color: "gray",
-    marginTop: 20,
   },
 });
 

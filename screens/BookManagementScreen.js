@@ -68,7 +68,7 @@ const BookManagementScreen = () => {
   const renderEmptyState = () => {
     return (
       <View style={styles.emptyStateContainer}>
-        <MaterialIcons name="library-books" size={100} color="black" />
+        <MaterialIcons name="library-books" size={100} color="#32a244" />
         <Text style={styles.emptyStateText}>No books available</Text>
       </View>
     );
@@ -85,18 +85,11 @@ const BookManagementScreen = () => {
 
   const sortedBooks = useMemo(() => {
     return [...filteredBooks].sort((a, b) => {
-      if (sortBy === "title") {
-        return a.title.localeCompare(b.title);
-      } else if (sortBy === "author") {
-        return a.author.localeCompare(b.author);
-      } else if (sortBy === "count") {
-        return b.count - a.count;
-      } else if (sortBy === "date") {
-        return new Date(b.date) - new Date(a.date);
-      }
-      return 0;
+      const titleA = a?.title || "";
+      const titleB = b?.title || "";
+      return titleA.localeCompare(titleB);
     });
-  }, [filteredBooks, sortBy]);
+  }, [filteredBooks]);
 
   const searchedBooks = useMemo(() => {
     return sortedBooks.filter((book) => {
@@ -470,6 +463,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   emptyStateText: {
+    marginTop: 20,
     fontSize: 18,
     color: "#666",
   },

@@ -26,10 +26,12 @@ import {
 import { ref, push, set } from "firebase/database";
 import { database, auth } from "../services/firebase/config";
 import { Snackbar } from "react-native-paper";
+import { useAuth } from "../contexts/AuthContext";
 
 const { width } = Dimensions.get("window");
 
 const QRCodeScannerScreen = () => {
+  const { userRole } = useAuth();
   const dispatch = useDispatch();
   const navigation = useNavigation();
   const [isLoading, setIsLoading] = useState(false);
